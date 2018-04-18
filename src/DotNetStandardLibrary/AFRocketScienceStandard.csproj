@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>icrosoft.Azure.Functions.AFRocketScience</RootNamespace>
+    <PackageId>RocketScience.Azure.Functions</PackageId>
+    <Version>0.0.2</Version>
+    <Authors>Eric Jorgensen</Authors>
+    <Company>Microsoft</Company>
+    <Product>RocketScience For Azure Functions</Product>
+    <Description>Tools to help quickly write Azure Functions</Description>
+    <PackageLicenseUrl>https://github.com/nebosite/azure-functions-rocketscience/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/nebosite/azure-functions-rocketscience</PackageProjectUrl>
+    <AssemblyVersion>0.0.2.0</AssemblyVersion>
+    <PackageTags>Azure Azure-Functions Functions Cloud</PackageTags>
+    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="packages\**" />
+    <Compile Remove="TestResults\**" />
+    <EmbeddedResource Remove="packages\**" />
+    <EmbeddedResource Remove="TestResults\**" />
+    <None Remove="packages\**" />
+    <None Remove="TestResults\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.0.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="System.Net.Http" Version="4.3.3" />
+  </ItemGroup>
+
+</Project>

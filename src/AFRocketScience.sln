@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFRocketScienceFramework", "AFRocketScienceFramework.csproj", "{9C4A3FAA-FA4F-49AB-A719-BE5D6292F8AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AFRocketScienceStandard", "DotNetStandardLibrary\AFRocketScienceStandard.csproj", "{ED25B825-ACF3-4C79-8E4F-D9C9F795CF1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsForAFRocketScienceFramework", "..\..\tests\TestsForAFRocketScienceFramework\TestsForAFRocketScienceFramework.csproj", "{BB6A596A-07FA-4A3C-BBA1-224A28A5669E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsForAFRocketScienceFramework", "..\tests\TestsForAFRocketScienceFramework\TestsForAFRocketScienceFramework.csproj", "{BB6A596A-07FA-4A3C-BBA1-224A28A5669E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,10 +13,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9C4A3FAA-FA4F-49AB-A719-BE5D6292F8AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9C4A3FAA-FA4F-49AB-A719-BE5D6292F8AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9C4A3FAA-FA4F-49AB-A719-BE5D6292F8AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9C4A3FAA-FA4F-49AB-A719-BE5D6292F8AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED25B825-ACF3-4C79-8E4F-D9C9F795CF1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED25B825-ACF3-4C79-8E4F-D9C9F795CF1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED25B825-ACF3-4C79-8E4F-D9C9F795CF1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED25B825-ACF3-4C79-8E4F-D9C9F795CF1F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BB6A596A-07FA-4A3C-BBA1-224A28A5669E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BB6A596A-07FA-4A3C-BBA1-224A28A5669E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB6A596A-07FA-4A3C-BBA1-224A28A5669E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -26,6 +26,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {7C457C7A-4053-4A54-B03B-2A39E1D80861}
+		SolutionGuid = {13E93450-8126-4D14-A1EF-10FFB59BD8CF}
 	EndGlobalSection
 EndGlobal

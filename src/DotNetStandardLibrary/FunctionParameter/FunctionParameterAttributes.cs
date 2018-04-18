@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
     //--------------------------------------------------------------------------------
     /// <summary>
     /// Signifies that this parameter is a header value
-    /// </summary>
+    /// </summary> 
     //--------------------------------------------------------------------------------
     public class FunctionParameterFromHeaderAttribute : Attribute
     {
