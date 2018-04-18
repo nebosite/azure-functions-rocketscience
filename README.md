@@ -1,13 +1,13 @@
 # azure-functions-rocketscience
 A framework for simplifying azure functions.  
 
-###Current Features
+### Current Features
 * Automatic packaging of output into uniform JSON
 * Smart error handling with log keys
 * Automatic HTTPRequest parameter parsing using a template class
 * SImplified keyvault access
 
-###Soon to be features:
+### Soon to be features:
 * Automatic Swagger documentation generation
 
 
