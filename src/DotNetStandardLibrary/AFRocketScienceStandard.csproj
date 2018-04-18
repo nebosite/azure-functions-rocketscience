@@ -4,16 +4,17 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>icrosoft.Azure.Functions.AFRocketScience</RootNamespace>
     <PackageId>RocketScience.Azure.Functions</PackageId>
-    <Version>0.0.2</Version>
+    <Version>0.0.3</Version>
     <Authors>Eric Jorgensen</Authors>
     <Company>Microsoft</Company>
     <Product>RocketScience For Azure Functions</Product>
     <Description>Tools to help quickly write Azure Functions</Description>
     <PackageLicenseUrl>https://github.com/nebosite/azure-functions-rocketscience/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/nebosite/azure-functions-rocketscience</PackageProjectUrl>
-    <AssemblyVersion>0.0.2.0</AssemblyVersion>
+    <AssemblyVersion>0.0.3.0</AssemblyVersion>
     <PackageTags>Azure Azure-Functions Functions Cloud</PackageTags>
-    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <PackageReleaseNotes>Moved to .net standard</PackageReleaseNotes>
+    <FileVersion>0.0.3.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
