@@ -15,6 +15,7 @@
     <PackageTags>Azure Azure-Functions Functions Cloud</PackageTags>
     <PackageReleaseNotes>Moved to .net standard</PackageReleaseNotes>
     <FileVersion>0.0.3.0</FileVersion>
+    <DebugType>Full</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.19.2" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Swagger.ObjectModel" Version="2.2.51-alpha" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
   </ItemGroup>
 

@@ -5,10 +5,12 @@ using System.Linq;
 using Microsoft.Azure.Functions.AFRocketScience;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Functions.AFRocketScienceTests
 {
 
+    [ExcludeFromCodeCoverage]
     [TestClass]
     public class LaunchpadTests
     {

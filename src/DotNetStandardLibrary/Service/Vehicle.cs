@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Swagger.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -118,35 +119,48 @@ _constructParameters.Invoke(null, new object[] { r })
         public static T ReadParameters<T>(HttpRequestMessage request) where T : new()
         {
             T output = new T();
-            var uriProperties = new List<PropertyInfo>();
+            var queryProperties = new List<PropertyInfo>();
             var headerProperties = new List<PropertyInfo>();
             var errors = new List<string>();
 
             var requiredProperties = new List<PropertyInfo>();
             foreach (var property in output.GetType().GetProperties())
             {
-                uriProperties.Add(property);
-                var apiAttribute = property.GetCustomAttribute(typeof(FunctionParameterRequiredAttribute), true);
-                if (apiAttribute != null)
+                var parameterInfo = property.GetCustomAttribute(typeof(FunctionParameterAttribute), true) as FunctionParameterAttribute;
+                if (parameterInfo == null) parameterInfo = new FunctionParameterAttribute();
+                if (parameterInfo.IsRequired)
                 {
                     requiredProperties.Add(property);
                 }
 
-                var fromHeaderAttribute = property.GetCustomAttribute(typeof(FunctionParameterFromHeaderAttribute), true);
-                if (fromHeaderAttribute != null)
+                switch(parameterInfo.Source)
                 {
-                    uriProperties.Remove(property);
-                    headerProperties.Add(property);
+                    case ParameterIn.Query:
+                        queryProperties.Add(property);
+                        break;
+                    case ParameterIn.Header:
+                        headerProperties.Add(property);
+                        break;
+                    default: throw new ApplicationException("Can't get parameters from " + parameterInfo.Source);
                 }
             }
 
             // Common way to read a property. Returns true if there was a property name match
-            bool DigestProperty(PropertyInfo property, string key, string value, string prefix = null)
+            bool DigestProperty(PropertyInfo property, string rawParameterName, string value, string prefix = null)
             {
                 var propertyName = property.Name.ToLower();
-                var dollarName = property.Name.ToLower().Replace("__", "$");
-                var parameterName = key.ToLower();
-                if (propertyName == parameterName || dollarName == parameterName)
+                var parameterInfo = property.GetCustomAttribute(typeof(FunctionParameterAttribute), true) as FunctionParameterAttribute;
+                if(parameterInfo?.FixPropertyName != null)
+                {
+                    var parts = parameterInfo.FixPropertyName.Split(new char[] { ',' }, 2);
+                    if (parts.Length != 2)
+                    {
+                        throw new ArgumentException($"Bad 'FixPropertyName' value on FunctionParameter '{propertyName}': {parameterInfo.FixPropertyName}");
+                    }
+                    propertyName = property.Name.Replace(parts[0], parts[1]).ToLower();
+                }
+                var parameterName = rawParameterName.ToLower();
+                if (propertyName == parameterName)
                 {
                     try
                     {
@@ -190,7 +204,7 @@ _constructParameters.Invoke(null, new object[] { r })
             foreach (var uriParameter in GetQueryNameValuePairs(request))
             {
                 var foundIt = false;
-                foreach (var property in uriProperties)
+                foreach (var property in queryProperties)
                 {
                     if (DigestProperty(property, uriParameter.Key, uriParameter.Value))
                     {
@@ -207,9 +221,9 @@ _constructParameters.Invoke(null, new object[] { r })
 
                 foreach (var property in headerProperties)
                 {
-                    var fromHeaderAttribute = property.GetCustomAttribute(typeof(FunctionParameterFromHeaderAttribute), true) as FunctionParameterFromHeaderAttribute;
+                    var parameterInfo = property.GetCustomAttribute(typeof(FunctionParameterAttribute), true) as FunctionParameterAttribute;
 
-                    if (DigestProperty(property, headerItem.Key, headerValues[0], fromHeaderAttribute.RemoveRequiredPrefix))
+                    if (DigestProperty(property, headerItem.Key, headerValues[0], parameterInfo?.RemoveRequiredPrefix))
                     {
                         break;
                     }

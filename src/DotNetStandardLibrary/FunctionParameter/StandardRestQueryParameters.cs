@@ -16,17 +16,20 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// <summary>
         /// Translates to $top.  (Which record to start returning) 
         /// </summary>
-        public int __Top { get; set; }
+        [FunctionParameter(FixPropertyName = "Query_,$" )]
+        public int Query_Top { get; set; }
 
         /// <summary>
         /// Translates to $skip.   (Size of the page in records)
         /// </summary>
-        public int __Skip { get; set; }
+        [FunctionParameter(FixPropertyName = "Query_,$")]
+        public int Query_Skip { get; set; }
 
         /// <summary>
         /// Translates to $count.  (number of records to return)
         /// </summary>
-        public int __Count { get; set; }
+        [FunctionParameter(FixPropertyName = "Query_,$")]
+        public int Query_Count { get; set; }
 
         /// <summary>
         /// Don't get data from before this data
@@ -41,7 +44,8 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// <summary>
         /// Comma-separated list of properties to sort by 
         /// </summary>
-        public string[] __OrderBy { get; set; }
+        [FunctionParameter(FixPropertyName = "Query_,$")]
+        public string[] Query_OrderBy { get; set; }
 
         /// <summary>
         /// Filter statement 
@@ -55,9 +59,9 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         //--------------------------------------------------------------------------------
         public StandardRestQueryParameters()
         {
-            __Top = 0;
-            __Skip = 0;
-            __Count = 100;
+            Query_Top = 0;
+            Query_Skip = 0;
+            Query_Count = 100;
             StartTimeUtc = DateTime.UtcNow.AddDays(-30);
             EndTimeUtc = DateTime.UtcNow;
         }

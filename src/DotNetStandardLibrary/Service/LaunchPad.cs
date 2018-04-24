@@ -1,10 +1,12 @@
 ﻿using Newtonsoft.Json;
+using Swagger.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -25,6 +27,280 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// </summary>
         private static readonly Lazy<LaunchPad> _lazyHandler = new Lazy<LaunchPad>(() => new LaunchPad());
         public static LaunchPad Instance => _lazyHandler.Value;
+        public static SwaggerRoot _docs;
+
+        //--------------------------------------------------------------------------------
+        /// <summary>
+        /// Shortcut to determin the azure funtion that ultimately called us
+        /// </summary>
+        //--------------------------------------------------------------------------------
+        static MethodBase GetCallingAzureFunction()
+        {
+            var stackTrace = new StackTrace();
+            var frames = stackTrace.GetFrames();
+            for(int i = 0; i < frames.Length; i++)
+            {
+                var method = frames[i].GetMethod();
+                var functionAtttribute = GetCustomAttribute(method, "FunctionNameAttribute");
+                if (functionAtttribute != null) return method;
+            }
+            return null;
+        }
+
+        //--------------------------------------------------------------------------------
+        /// <summary>
+        /// Get the swagger documentation for this assembly
+        /// </summary>
+        //--------------------------------------------------------------------------------
+        public static HttpResponseMessage ShowSwaggerHtmlResponse(HttpRequestMessage req, IServiceLogger logger)
+        {
+            try
+            {
+                if (_docs == null)
+                {
+                    _docs = GenerateSwagger(req, logger, Assembly.GetCallingAssembly());
+                }
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK);
+                response.Content = new StringContent(GetSwaggerHtml(_docs));
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+                return response;
+
+            }
+            catch(Exception e)
+            {
+                var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                response.Content = new StringContent($"<pre>Whoops: \r\n{e.ToString()}</pre>");
+                response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+                return response;
+            }
+        }
+
+        //--------------------------------------------------------------------------------
+        /// <summary>
+        /// Turn swagger documentation into html
+        /// </summary>
+        //--------------------------------------------------------------------------------
+        private static string GetSwaggerHtml(SwaggerRoot docs)
+        {
+            var content = new StringBuilder();
+            content.AppendLine("<pre>");
+            content.AppendLine($"{docs.Info.Title} Version {docs.Info.Version}");
+            content.AppendLine($"\r\nPaths: ");
+
+            void DoOperation(string path, string type, Operation operation)
+            {
+                if (operation == null) return;
+                content.AppendLine($"    {docs.BasePath}{path} ({type})");
+                content.AppendLine($"        Parameters:");
+                foreach(var parameter in operation.Parameters)
+                {
+                    var requiredText = parameter.Required.Value ? " * " : "   ";
+                    content.AppendLine($"            {requiredText}{parameter.Type} {parameter.Name} in {parameter.In}   {parameter.Description}");
+                }
+
+                content.AppendLine($"        Responses:");
+                foreach (var response in operation.Responses)
+                {
+                    content.AppendLine($"               {response.Key} {response.Value.Schema.Type} {response.Value.Description}");
+                    foreach(var item in response.Value.Schema.Properties)
+                    {
+                        content.AppendLine($"                   {item.Value.Type} {item.Key} {item.Value.Description}");
+                    }
+                }
+
+            }
+
+            foreach (var pathEntry in docs.Paths)
+            {
+                DoOperation(pathEntry.Key, "get", pathEntry.Value.Get);
+                DoOperation(pathEntry.Key, "delete", pathEntry.Value.Delete);
+                DoOperation(pathEntry.Key, "head", pathEntry.Value.Head);
+                DoOperation(pathEntry.Key, "options", pathEntry.Value.Options);
+                DoOperation(pathEntry.Key, "patch", pathEntry.Value.Patch);
+                DoOperation(pathEntry.Key, "post", pathEntry.Value.Post);
+                DoOperation(pathEntry.Key, "put", pathEntry.Value.Put);
+            }
+
+            content.AppendLine($"Security:");
+
+            foreach (var securityEntry in docs.SecurityDefinitions)
+            {
+                content.AppendLine($"     {securityEntry.Key}:{securityEntry.Value.Name}");
+            }
+            content.AppendLine("</pre>");
+            return content.ToString();
+        }
+
+        //--------------------------------------------------------------------------------
+        /// <summary>
+        /// Shortcut to get property values when we don't have access to the type
+        /// </summary>
+        //--------------------------------------------------------------------------------
+        static T GetPropertyValue<T>(object source, string propertyName)
+        {
+            var property = source.GetType().GetProperty(propertyName);
+            if (property == null) throw new ArgumentException($"Source object does not have property '{propertyName}'");
+
+            return (T)(property.GetValue(source));
+        }
+
+        //--------------------------------------------------------------------------------
+        /// <summary>
+        /// Shortcut to get a specified custom attribute
+        /// </summary>
+        //--------------------------------------------------------------------------------
+        static object GetCustomAttribute(ICustomAttributeProvider item, string attributeName)
+        {
+            return item.GetCustomAttributes(true).Where(a => a.GetType().Name == attributeName).FirstOrDefault();
+        }
+        static object GetCustomAttribute(ICustomAttributeProvider item, Type attributeType)
+        {
+            return GetCustomAttribute(item, attributeType.Name);
+        }
+
+
+        //--------------------------------------------------------------------------------
+        /// <summary>
+        /// Auto-generate swagger doc tree from the calling assembly
+        /// </summary>
+        //--------------------------------------------------------------------------------
+        private static SwaggerRoot GenerateSwagger(HttpRequestMessage req, IServiceLogger logger, Assembly functionAssembly)
+        {
+            var caller = GetCallingAzureFunction();
+            var paths = new Dictionary<string, PathItem>();
+
+
+            // Go through all the types in the calling assembly
+            foreach (var type in functionAssembly.GetTypes())
+            {
+                // Azure functions are public and static
+                foreach (var method in type.GetMethods(BindingFlags.Static | BindingFlags.Public))
+                {
+                    // Must have a function name attribute
+                    var functionAtttribute = method.CustomAttributes.Where(a => a.AttributeType.Name == "FunctionNameAttribute").FirstOrDefault();
+                    if (functionAtttribute == null) continue;
+
+                    // Must have http trigger attribute on the first parameter
+                    var parameters = method.GetParameters();
+                    if (parameters.Length < 2) continue;
+                    var httpTriggerAttribute = GetCustomAttribute(parameters[0], "HttpTriggerAttribute");
+                    if (httpTriggerAttribute == null) continue;
+
+                    // By convention, we'll exclude the azure function calling us
+                    if (method.Name == caller.Name && method.DeclaringType.Name == caller.DeclaringType.Name) continue;
+
+                    paths.Add(GetPropertyValue<string>(httpTriggerAttribute, "Route"), CreatePathItemFromMethod(method));
+                }
+            }
+
+            var security = new Dictionary<string, SecurityScheme>();
+            security.Add("apikeyQuery", new SecurityScheme()
+            {
+                Name = "code",
+                Type = SecuritySchemes.ApiKey,
+                In = ApiKeyLocations.Query
+            });
+
+            var callerTriggerInfo = GetCustomAttribute(caller.GetParameters()[0], "HttpTriggerAttribute");
+            var callerPath = GetPropertyValue<string>(callerTriggerInfo, "Route");
+
+            var root = new SwaggerRoot()
+            {
+                Info = new Info() { Title = req.RequestUri.Host, Version = functionAssembly.GetName().Version.ToString() },
+                Host = req.RequestUri.Host,
+                BasePath = req.RequestUri.LocalPath.Substring(0, req.RequestUri.LocalPath.Length - callerPath.Length),
+                Schemes = new[] { Schemes.Https },
+                Paths = paths,
+                Definitions = new Dictionary<string, Schema>(),
+                SecurityDefinitions = security
+            };
+
+            return root;
+        }
+
+        //--------------------------------------------------------------------------------
+        /// <summary>
+        /// Auto-generate swagger PathItem from an http trigger method
+        /// </summary>
+        //--------------------------------------------------------------------------------
+        private static PathItem CreatePathItemFromMethod(MethodInfo azureFunction)
+        {
+            var functionNameAttribute = GetCustomAttribute(azureFunction, "FunctionNameAttribute");
+            var httpTriggerAttribute = GetCustomAttribute(azureFunction.GetParameters()[0], "HttpTriggerAttribute");
+            
+            var handlerProperty = azureFunction.DeclaringType.GetProperty("Handler", BindingFlags.Public | BindingFlags.Static);
+            var handlerMethod = handlerProperty.PropertyType.GetMethod(azureFunction.Name);
+
+            var parameters = new  List<Parameter>();
+            foreach(var property in handlerMethod.GetParameters()[0].ParameterType.GetProperties())
+            {
+                var functionInfo = GetCustomAttribute(property, typeof(FunctionParameterAttribute)) as FunctionParameterAttribute;
+                var name = property.Name;
+                if (functionInfo?.FixPropertyName != null)
+                {
+                    var parts = functionInfo.FixPropertyName.Split(new char[] { ',' }, 2);
+                    if (parts.Length != 2)
+                    {
+                        throw new ArgumentException($"Bad 'FixPropertyName' value on FunctionParameter '{name}': {functionInfo.FixPropertyName}");
+                    }
+                    name = property.Name.Replace(parts[0], parts[1]);
+                }
+
+                parameters.Add(new Parameter()
+                {
+                    Name = name,
+                    In = functionInfo == null ? ParameterIn.Query : functionInfo.Source,
+                    Description = functionInfo?.SwaggerDescription,
+                    Required = functionInfo == null ? false : functionInfo.IsRequired,
+                    Type = property.PropertyType.Name,
+                });
+            }
+
+            var schemaProperties = new Dictionary<string, Schema>();
+            schemaProperties.Add("Count", new Schema() { Type = "integer", Description = "Number of Values" });
+            schemaProperties.Add("ErrorCode", new Schema() { Type = "string", Description = "Short Text Description of any error (if any)" });
+            schemaProperties.Add("ErrorMessage", new Schema() { Type = "string", Description = "Detailed error message (if any)" });
+            schemaProperties.Add("Value", new Schema() { Type = "array", Items = new Item() { Type = handlerMethod.ReturnType.Name }, Description = "Data returned from a successful operation (in any)" });
+            var itemResponses = new Dictionary<string, Response>();
+            itemResponses.Add("*", new Response()
+            {
+                Description = "Any Response",
+                Schema = new Schema()
+                {
+                    Type = "object",
+                    Properties = schemaProperties
+                }
+            });
+
+
+            var pathItem = new PathItem();
+            var operation  = new Operation()
+                {
+                    OperationId = GetPropertyValue<string>(functionNameAttribute, "Name"),
+                    Produces = new[] { "application/json" },
+                    Consumes = new[] { "application/json" },
+                    Parameters = parameters,
+                    Responses = itemResponses
+            };
+
+            foreach(var method in GetPropertyValue<string[]>(httpTriggerAttribute, "Methods"))
+            {
+                switch(method.ToLower())
+                {
+                    case "get": pathItem.Get = operation; break;
+                    case "post": pathItem.Post = operation; break;
+                    case "put": pathItem.Put = operation; break;
+                    case "head": pathItem.Head = operation; break;
+                    case "patch": pathItem.Patch = operation; break;
+                    case "delete": pathItem.Delete = operation; break;
+                    case "options": pathItem.Options = operation; break;
+                }
+            }
+
+            return pathItem;
+        }
+
         static Dictionary<string, Vehicle> _vehicles = new Dictionary<string, Vehicle>();
 
         //--------------------------------------------------------------------------------
@@ -39,8 +315,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             {
                 if(!_vehicles.TryGetValue(req.RequestUri.LocalPath, out var caller))
                 {
-                    var stackTrace = new StackTrace();
-                    var callingMethod = stackTrace.GetFrame(7).GetMethod();
+                    var callingMethod = GetCallingAzureFunction();
                     var handlerProperty = callingMethod.DeclaringType.GetProperty("Handler", BindingFlags.Public | BindingFlags.Static);
 
                     if(handlerProperty == null)
@@ -78,7 +353,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Framework for handling background jobs. 
         /// </summary>
         //--------------------------------------------------------------------------------
-        public void SafelyTryJob(IServiceLogger logger, Action tryme)
+        internal void SafelyTryJob(IServiceLogger logger, Action tryme)
         {
             try
             {
@@ -98,7 +373,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// </summary>
         //--------------------------------------------------------------------------------
         // TODO: replace TraceWriter with ILogger based logging service for easy testing.
-        public HttpResponseMessage SafelyTry(IServiceLogger logger, Func<object> tryme)
+        internal HttpResponseMessage SafelyTry(IServiceLogger logger, Func<object> tryme)
         {
             try
             {
@@ -119,7 +394,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Ok response 
         /// </summary>
         //--------------------------------------------------------------------------------
-        public HttpResponseMessage Ok(object output = null)
+        internal HttpResponseMessage Ok(object output = null)
         {
             var response = new ServiceResponse(output);
             return new HttpResponseMessage(HttpStatusCode.OK)
@@ -133,7 +408,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Error response 
         /// </summary>
         //--------------------------------------------------------------------------------
-        public HttpResponseMessage Error(Exception error, IServiceLogger logger)
+        internal HttpResponseMessage Error(Exception error, IServiceLogger logger)
         {
             var logKey = CurrentLogKey;
             logger.Error($"{logKey} Service Error: {error.Message}", error);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
     /// Useful extentions to Assert
     /// </summary>
     //--------------------------------------------------------------------------------
+    [ExcludeFromCodeCoverage]
     public class AssertEx
     {
         //--------------------------------------------------------------------------------

@@ -2,10 +2,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net.Http;
 using Microsoft.Azure.Functions.AFRocketScience;
+using Swagger.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Functions.AFRocketScienceTests
 {
 
+    [ExcludeFromCodeCoverage]
     [TestClass]
     public class VehicleTests
     {
@@ -14,7 +17,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         //------------------------------------------------------------------------------
         HttpRequestMessage MakeHttpRequest(string urlParameters)
         {
-            return new HttpRequestMessage(HttpMethod.Post, $"http://foo.bar.com/app?{urlParameters}");
+            return new HttpRequestMessage(System.Net.Http.HttpMethod.Post, $"http://foo.bar.com/app?{urlParameters}");
         }
 
         public enum TestBlots
@@ -87,7 +90,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
 
         class HasRequired 
         {
-            [FunctionParameterRequired]
+            [FunctionParameter(IsRequired =true)]
             public string StringThing { get; set; }
         }
 
@@ -126,19 +129,20 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         [TestCategory("CheckInGate")]
         public void ReadParameters_HandlesDollarParameters()
         {
-            var request = MakeHttpRequest("__top=20&$skip=30");
+            var request = MakeHttpRequest("$skip=30");
             var result = Vehicle.ReadParameters<HappyParameters>(request);
 
-            AssertEx.AreEqual(20, result.__Top);
-            AssertEx.AreEqual(30, result.__Skip);
+            AssertEx.AreEqual(30, result.Query_Skip);
+
+            Assert.ThrowsException<ServiceOperationException>(() => Vehicle.ReadParameters<HappyParameters>(MakeHttpRequest("Query_skip=30")));
         }
 
         class ParamsInHeader
         {
-            [FunctionParameterFromHeader(RemoveRequiredPrefix = "zorba:")]
+            [FunctionParameter(Source = ParameterIn.Header,  RemoveRequiredPrefix = "zorba:")]
             public double Prefixed { get; set; }
 
-            [FunctionParameterFromHeader]
+            [FunctionParameter(Source = ParameterIn.Header)]
             public Guid Normal { get; set; }
 
             public string Bob { get; set; }
