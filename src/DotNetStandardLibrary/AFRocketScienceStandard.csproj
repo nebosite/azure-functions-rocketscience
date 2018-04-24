@@ -20,6 +20,7 @@ Refactored Function Parameter Attributes
 A few small bug fixes</PackageReleaseNotes>
     <FileVersion>0.0.4.0</FileVersion>
     <DebugType>Full</DebugType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
