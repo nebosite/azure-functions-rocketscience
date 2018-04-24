@@ -8,10 +8,10 @@ namespace Microsoft.Azure.Functions.AFRocketScience
     //--------------------------------------------------------------------------------
     public enum ServiceOperationError
     {
-        NoError = 0,
-        FatalError = 1,
-        AuthorizationError = 2,
-        BadParameter = 2,
-        DataError = 3,
+        NoError,
+        FatalError,
+        AuthorizationError,
+        BadParameter,
+        DataError,
     }
 }

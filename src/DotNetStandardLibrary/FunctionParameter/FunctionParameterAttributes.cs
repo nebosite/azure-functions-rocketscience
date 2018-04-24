@@ -3,12 +3,11 @@ using System;
 
 namespace Microsoft.Azure.Functions.AFRocketScience
 {
-    public class NameSubstitution
-    {
-        public string ReplaceText { get; set; }
-        public string With { get; set; }
-    }
-
+    //------------------------------------------------------------------------------
+    /// <summary>
+    /// Modifiers to control how HttpRequest data makes it into your function
+    /// </summary>
+    //------------------------------------------------------------------------------
     public class FunctionParameterAttribute : Attribute
     {
         /// <summary>
@@ -29,15 +28,25 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         public string RemoveRequiredPrefix { get; set; }
 
         /// <summary>
-        /// Text to display in the public docs for this API
-        /// </summary>
-        public string SwaggerDescription { get; set; }
-
-        /// <summary>
         /// Allows for the use of special characters in the query.
         /// Format:  (ReplaceTextInPropertyName),(WithThis)
         /// E.g. $top   
         /// </summary>
         public string FixPropertyName { get; set; }
+
+        #region SWAGGER 
+
+        /// <summary>
+        /// Text to display in the public docs for this API
+        /// </summary>
+        public string SwaggerDescription { get; set; }
+
+        /// <summary>
+        /// This is a signal to swagger to hide the contents
+        /// of this parameter when specified from a UI
+        /// </summary>
+        public bool SwaggerSecurityParameter { get; set; } = false;
+
+        #endregion // SWAGGER
     }
 }

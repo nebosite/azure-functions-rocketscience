@@ -410,8 +410,10 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         //--------------------------------------------------------------------------------
         internal HttpResponseMessage Error(Exception error, IServiceLogger logger)
         {
+            if (error is TargetInvocationException) error = ((TargetInvocationException)error).InnerException;
             var logKey = CurrentLogKey;
             logger.Error($"{logKey} Service Error: {error.Message}", error);
+           
 
             var statusCode = HttpStatusCode.BadRequest;
             var response = new ServiceResponse(null);
