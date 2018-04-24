@@ -59,8 +59,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssertEx.cs" />
-    <Compile Include="ControllerHandlerBaseTests.cs" />
-    <Compile Include="FunctionParameterExtensionsTests.cs" />
+    <Compile Include="LaunchpadTests.cs" />
+    <Compile Include="VehicleTests.cs" />
     <Compile Include="MockLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

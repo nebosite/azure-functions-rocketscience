@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
 {
 
     [TestClass]
-    public class FunctionParameterExtensionsTests
+    public class VehicleTests
     {
         //------------------------------------------------------------------------------
         //  Helper to make httprequests
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
                 + "&datething=2017/2/3 14:22:11"
                 + "&EnumTHing=bAR"
                 + "&manyints=  3,23,42, 99 ");
-            var result = request.ReadParameters<HappyParameters>();
+            var result = Vehicle.ReadParameters<HappyParameters>(request);
 
             AssertEx.AreEqual("Bumper crop", result.StringThing);
             AssertEx.AreEqual(22, result.IntThing);
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         {
             var request = MakeHttpRequest("intthing=blah");
 
-            var result = Assert.ThrowsException<ServiceOperationException>(() => request.ReadParameters<HappyParameters>());
+            var result = Assert.ThrowsException<ServiceOperationException>(() => Vehicle.ReadParameters<HappyParameters>(request));
             AssertEx.AreEqual("Error on (Int32) property 'IntThing': Input string was not in a correct format.", result.Message);
             AssertEx.AreEqual(ServiceOperationError.BadParameter, result.ErrorCode);
         }
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         public void ReadParameters_HandlesUtcDates()
         {
             var request = MakeHttpRequest("dateThingUtc=2017/2/3 14:22:11");
-            var result = request.ReadParameters<HappyParameters>();
+            var result = Vehicle.ReadParameters<HappyParameters>(request);
             AssertEx.AreEqual(new DateTime(2017, 2, 3, 14, 22, 11, DateTimeKind.Utc), result.DateThingUtc);
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         {
             var request = MakeHttpRequest("");
 
-            var result = Assert.ThrowsException<ServiceOperationException>(() => request.ReadParameters<HasRequired>());
+            var result = Assert.ThrowsException<ServiceOperationException>(() => Vehicle.ReadParameters<HasRequired>(request));
             AssertEx.AreEqual("Missing required parameter 'StringThing'", result.Message);
             AssertEx.AreEqual(ServiceOperationError.BadParameter, result.ErrorCode);
         }
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         {
             var request = MakeHttpRequest("turtLE=blah&NotAParameter=1");
 
-            var result = Assert.ThrowsException<ServiceOperationException>(() => request.ReadParameters<HappyParameters>());
+            var result = Assert.ThrowsException<ServiceOperationException>(() => Vehicle.ReadParameters<HappyParameters>(request));
             AssertEx.AreEqual("Unknown uri parameter 'turtLE'\r\nUnknown uri parameter 'NotAParameter'", result.Message);
             AssertEx.AreEqual(ServiceOperationError.BadParameter, result.ErrorCode);
         }
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         public void ReadParameters_HandlesDollarParameters()
         {
             var request = MakeHttpRequest("__top=20&$skip=30");
-            var result = request.ReadParameters<HappyParameters>();
+            var result = Vehicle.ReadParameters<HappyParameters>(request);
 
             AssertEx.AreEqual(20, result.__Top);
             AssertEx.AreEqual(30, result.__Skip);
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
             var request = MakeHttpRequest("bob=hi");
             request.Headers.Add("PREFIxed", "zorba:99.8");
             request.Headers.Add("NORMal", testGuid.ToString());
-            var result = request.ReadParameters<ParamsInHeader>();
+            var result = Vehicle.ReadParameters<ParamsInHeader>(request);
 
             AssertEx.AreEqual(testGuid, result.Normal);
             AssertEx.AreEqual(99.8, result.Prefixed);

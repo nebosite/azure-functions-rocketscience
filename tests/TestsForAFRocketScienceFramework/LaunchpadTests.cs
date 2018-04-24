@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
 {
 
     [TestClass]
-    public class ControllerHandlerBaseTests
+    public class LaunchpadTests
     {
         class TestResponse
         {
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         [TestCategory("CheckInGate")]
         public void Error_ReturnsFatal_OnNormalException()
         {
-            var target = new ControllerHandlerBase();
+            var target = new LaunchPad();
             var mockLogger = new MockLogger();
             var output = new RandomException("Bumper Boats", "Abba\\Dabba\\foobar:line 232\r\nShoe\\Lollipop\\gumby:line 444");
             var result = target.Error(output, mockLogger);
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         [TestCategory("CheckInGate")]
         public void Error_ReturnsNonFatal_OnServiceException()
         {
-            var target = new ControllerHandlerBase();
+            var target = new LaunchPad();
             var mockLogger = new MockLogger();
             var output = new ServiceOperationException(ServiceOperationError.BadParameter, "Yuba bears");
             var result = target.Error(output, mockLogger);
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         public void Ok_ConvertsOutput_ToJson()
         {
             // valuetypes are serialized as one element value array
-            var target = new ControllerHandlerBase();
+            var target = new LaunchPad();
             var result = target.Ok("A string");
             AssertEx.AreEqual(HttpStatusCode.OK, result.StatusCode);
             AssertEx.AreEqual(
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         public void SafelyTry_ReturnsStandardResponseObject_OnSuccess()
         {
             // valuetypes are serialized as one element value array
-            var target = new ControllerHandlerBase();
+            var target = new LaunchPad();
             var mockLogger = new MockLogger();
             var result = target.SafelyTry(mockLogger, () => "Hi");
             AssertEx.AreEqual(HttpStatusCode.OK, result.StatusCode);
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         public void SafelyTry_ReturnsRawValue_WhenHttpResponseMessage()
         {
             // valuetypes are serialized as one element value array
-            var target = new ControllerHandlerBase();
+            var target = new LaunchPad();
             var mockLogger = new MockLogger();
             var output = new HttpResponseMessage(HttpStatusCode.PartialContent)
             {
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         public void SafelyTry_ReturnsError_OnException()
         {
             // valuetypes are serialized as one element value array
-            var target = new ControllerHandlerBase();
+            var target = new LaunchPad();
             var mockLogger = new MockLogger();
 
 
