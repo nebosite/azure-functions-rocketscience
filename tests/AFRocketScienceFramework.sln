@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{C9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SimpleHttpTrigger", "SimpleHttpTrigger", "{03CAF85D-8298-4492-BF63-29DBDF773341}"
 	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
+		..\src\Examples\SimpleHttpTrigger\README.md = ..\src\Examples\SimpleHttpTrigger\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriggerExample", "..\src\Examples\SimpleHttpTrigger\TriggerExample\TriggerExample.csproj", "{ADB8DE1D-70F2-4D37-AD24-8CC4636B6BA0}"
