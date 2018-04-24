@@ -4,17 +4,21 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>icrosoft.Azure.Functions.AFRocketScience</RootNamespace>
     <PackageId>RocketScience.Azure.Functions</PackageId>
-    <Version>0.0.3</Version>
+    <Version>0.0.4</Version>
     <Authors>Eric Jorgensen</Authors>
     <Company>Microsoft</Company>
     <Product>RocketScience For Azure Functions</Product>
     <Description>Tools to help quickly write Azure Functions</Description>
     <PackageLicenseUrl>https://github.com/nebosite/azure-functions-rocketscience/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/nebosite/azure-functions-rocketscience</PackageProjectUrl>
-    <AssemblyVersion>0.0.3.0</AssemblyVersion>
+    <AssemblyVersion>0.0.4.0</AssemblyVersion>
     <PackageTags>Azure Azure-Functions Functions Cloud</PackageTags>
-    <PackageReleaseNotes>Moved to .net standard</PackageReleaseNotes>
-    <FileVersion>0.0.3.0</FileVersion>
+    <PackageReleaseNotes>Added Swagger generation
+Major refactor of how handler methods are called - now it is automated to help guide the developer and to help with swagger generation
+Added Simple Example code
+Refactored Function Parameter Attributes
+A few small bug fixes</PackageReleaseNotes>
+    <FileVersion>0.0.4.0</FileVersion>
     <DebugType>Full</DebugType>
   </PropertyGroup>
 
