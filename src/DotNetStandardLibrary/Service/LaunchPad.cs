@@ -309,7 +309,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// function. 
         /// </summary>
         //--------------------------------------------------------------------------------
-        public static async Task<HttpResponseMessage> ExecuteHttpTrigger(HttpRequestMessage req, IServiceLogger logger)
+        public static async Task<HttpResponseMessage> ExecuteHttpTrigger(HttpRequestMessage req, IServiceLogger logger, params object[] extras)
         {
             return Instance.SafelyTry(logger, () =>
             {
@@ -329,7 +329,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                     _vehicles.Add(req.RequestUri.LocalPath, caller);
 
                 }
-                return caller.ExecuteHttpRequest(req, logger);
+                return caller.ExecuteHttpRequest(req, logger, extras);
             });
         }
 

@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
         class ParameterDefinition
         {
-            public Func<HttpRequestMessage, IServiceLogger, object> Create { get; set; }
+            public Func<HttpRequestMessage, IServiceLogger, object[], object> Create { get; set; }
         }
 
         //------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Execute this call as an Http request
         /// </summary>
         //------------------------------------------------------------------------------
-        public object ExecuteHttpRequest(HttpRequestMessage req, IServiceLogger logger)
+        public object ExecuteHttpRequest(HttpRequestMessage req, IServiceLogger logger, params object[] extras)
         {
             var handler = _handlerStaticProperty.GetValue(null);
             var generatedParameters = new List<object>();
@@ -57,33 +57,43 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             {
                 var newDefinitions = new List<ParameterDefinition>();
                 var targetParameters = _callMe.GetParameters();
-                if (targetParameters.Length < 2)
+                if (extras == null) extras = new Tuple<string, object>[0];
+                if (targetParameters.Length != 2 + extras.Length )
                 {
-                    throw new ApplicationException($"The target method '{_callMe.Name}' has too few parameters. It must have at least two: (MyArguments args, IServiceLogger logger, ...)");
+                    throw new ApplicationException($"The target method '{_callMe.Name}' should have {2 + extras.Length} parameters, but has {targetParameters.Length}.");
                 }
 
+                // The first parameter is the user's custom property bag class which we will generically construct 
+                // from the request using the ReadParameters method
                 var firstParameterType = targetParameters[0].ParameterType;
-                if (firstParameterType.Name == "IServiceLogger")
-                {
-                    throw new ApplicationException($"The target method '{_callMe.Name}' first parameter should be your argument class type, not IServiceLogger.");
-                }
-
                 var context = this.GetType();
                 var readParametersMethod = context.GetMethod("ReadParameters", BindingFlags.Static | BindingFlags.Public);
                 _constructParameters = readParametersMethod.MakeGenericMethod(new[] { firstParameterType });
-
                 newDefinitions.Add(new ParameterDefinition()
                 {
-                    Create = (r, l) =>
-_constructParameters.Invoke(null, new object[] { r })
+                    Create = (r, l, e) => _constructParameters.Invoke(null, new object[] { r })
                 });
-                newDefinitions.Add(new ParameterDefinition() { Create = (r, l) => l });
+
+                // The second parameter is just the passed in IserviceLogger
+                if (targetParameters[1].ParameterType.Name != "IServiceLogger")
+                {
+                    throw new ApplicationException($"The target method '{_callMe.Name}' second parameter should be type IServiceLogger.");
+                }
+                newDefinitions.Add(new ParameterDefinition() { Create = (r, l, e) => l });
+
+                // fill in any remaining parameters with the extra named arguments
+                for(int i = 2; i < targetParameters.Length; i++)
+                {
+                    var index = i - 2;
+                    newDefinitions.Add(new ParameterDefinition() { Create = (r, l, e) => e[index] });
+                }
+
                 _parameterDefinitions = newDefinitions.ToArray();
             }
 
             foreach (var parameter in _parameterDefinitions)
             {
-                generatedParameters.Add(parameter.Create(req, logger));
+                generatedParameters.Add(parameter.Create(req, logger, extras));
             }
 
 
