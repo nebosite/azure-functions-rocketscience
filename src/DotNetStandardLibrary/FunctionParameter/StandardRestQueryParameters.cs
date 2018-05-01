@@ -14,22 +14,22 @@ namespace Microsoft.Azure.Functions.AFRocketScience
     public class StandardRestQueryParameters
     {
         /// <summary>
-        /// Translates to $top.  (Which record to start returning) 
+        /// Translates to $top.  (Total number of records to return) 
         /// </summary>
-        [FunctionParameter(FixPropertyName = "Query_,$" )]
+        [FunctionParameter(SourcePropertyName = "$Top" )]
         public int Query_Top { get; set; }
 
         /// <summary>
-        /// Translates to $skip.   (Size of the page in records)
+        /// Translates to $skip.   (Where to start returning records)
         /// </summary>
-        [FunctionParameter(FixPropertyName = "Query_,$")]
+        [FunctionParameter(SourcePropertyName = "$Skip")]
         public int Query_Skip { get; set; }
 
         /// <summary>
-        /// Translates to $count.  (number of records to return)
+        /// Translates to $count.  (If true, then get the count of records)
         /// </summary>
-        [FunctionParameter(FixPropertyName = "Query_,$")]
-        public int Query_Count { get; set; }
+        [FunctionParameter(SourcePropertyName = "$Count")]
+        public bool Query_Count { get; set; }
 
         /// <summary>
         /// Don't get data from before this data
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// <summary>
         /// Comma-separated list of properties to sort by 
         /// </summary>
-        [FunctionParameter(FixPropertyName = "Query_,$")]
+        [FunctionParameter(SourcePropertyName = "$OrderBy")]
         public string[] Query_OrderBy { get; set; }
 
         /// <summary>
@@ -59,9 +59,9 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         //--------------------------------------------------------------------------------
         public StandardRestQueryParameters()
         {
-            Query_Top = 0;
+            Query_Top = 100;
             Query_Skip = 0;
-            Query_Count = 100;
+            Query_Count = false;
             StartTimeUtc = DateTime.UtcNow.AddDays(-30);
             EndTimeUtc = DateTime.UtcNow;
         }

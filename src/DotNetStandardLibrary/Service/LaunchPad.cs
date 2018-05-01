@@ -235,17 +235,8 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             var parameters = new  List<Parameter>();
             foreach(var property in handlerMethod.GetParameters()[0].ParameterType.GetProperties())
             {
-                var functionInfo = GetCustomAttribute(property, typeof(FunctionParameterAttribute)) as FunctionParameterAttribute;
-                var name = property.Name;
-                if (functionInfo?.FixPropertyName != null)
-                {
-                    var parts = functionInfo.FixPropertyName.Split(new char[] { ',' }, 2);
-                    if (parts.Length != 2)
-                    {
-                        throw new ArgumentException($"Bad 'FixPropertyName' value on FunctionParameter '{name}': {functionInfo.FixPropertyName}");
-                    }
-                    name = property.Name.Replace(parts[0], parts[1]);
-                }
+                var functionInfo = property.GetParams();
+                var name = property.GetSourcePropertyName();
 
                 parameters.Add(new Parameter()
                 {

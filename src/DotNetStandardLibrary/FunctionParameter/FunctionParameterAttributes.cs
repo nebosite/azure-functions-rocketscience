@@ -28,11 +28,11 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         public string RemoveRequiredPrefix { get; set; }
 
         /// <summary>
-        /// Allows for the use of special characters in the query.
-        /// Format:  (ReplaceTextInPropertyName),(WithThis)
+        /// Get the data for theis property using this name instead of
+        /// the actual property name.
         /// E.g. $top   
         /// </summary>
-        public string FixPropertyName { get; set; }
+        public string SourcePropertyName { get; set; }
 
         #region SWAGGER 
 

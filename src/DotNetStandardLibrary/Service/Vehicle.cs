@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                 var newDefinitions = new List<ParameterDefinition>();
                 var targetParameters = _callMe.GetParameters();
                 if (extras == null) extras = new Tuple<string, object>[0];
-                if (targetParameters.Length != 2 + extras.Length )
+                if (targetParameters.Length != 2 + extras.Length)
                 {
                     throw new ApplicationException($"The target method '{_callMe.Name}' should have {2 + extras.Length} parameters, but has {targetParameters.Length}.");
                 }
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                 newDefinitions.Add(new ParameterDefinition() { Create = (r, l, e) => l });
 
                 // fill in any remaining parameters with the extra named arguments
-                for(int i = 2; i < targetParameters.Length; i++)
+                for (int i = 2; i < targetParameters.Length; i++)
                 {
                     var index = i - 2;
                     newDefinitions.Add(new ParameterDefinition() { Create = (r, l, e) => e[index] });
@@ -136,14 +136,13 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             var requiredProperties = new List<PropertyInfo>();
             foreach (var property in output.GetType().GetProperties())
             {
-                var parameterInfo = property.GetCustomAttribute(typeof(FunctionParameterAttribute), true) as FunctionParameterAttribute;
-                if (parameterInfo == null) parameterInfo = new FunctionParameterAttribute();
+                var parameterInfo = property.GetParams();
                 if (parameterInfo.IsRequired)
                 {
                     requiredProperties.Add(property);
                 }
 
-                switch(parameterInfo.Source)
+                switch (parameterInfo.Source)
                 {
                     case ParameterIn.Query:
                         queryProperties.Add(property);
@@ -158,17 +157,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             // Common way to read a property. Returns true if there was a property name match
             bool DigestProperty(PropertyInfo property, string rawParameterName, string value, string prefix = null)
             {
-                var propertyName = property.Name.ToLower();
-                var parameterInfo = property.GetCustomAttribute(typeof(FunctionParameterAttribute), true) as FunctionParameterAttribute;
-                if(parameterInfo?.FixPropertyName != null)
-                {
-                    var parts = parameterInfo.FixPropertyName.Split(new char[] { ',' }, 2);
-                    if (parts.Length != 2)
-                    {
-                        throw new ArgumentException($"Bad 'FixPropertyName' value on FunctionParameter '{propertyName}': {parameterInfo.FixPropertyName}");
-                    }
-                    propertyName = property.Name.Replace(parts[0], parts[1]).ToLower();
-                }
+                var propertyName = property.GetSourcePropertyName().ToLower();
                 var parameterName = rawParameterName.ToLower();
                 if (propertyName == parameterName)
                 {
@@ -178,7 +167,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                         {
                             if (!value.StartsWith(prefix))
                             {
-                                errors.Add($"Error on ({property.PropertyType.Name}) property '{property.Name}': Required prefix '{prefix}' was missing.");
+                                errors.Add($"Error on ({property.PropertyType.Name}) property '{property.GetSourcePropertyName()}': Required prefix '{prefix}' was missing.");
                                 return true;
                             }
                             value = value.Substring(prefix.Length);
@@ -202,7 +191,11 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                     }
                     catch (Exception e)
                     {
-                        errors.Add($"Error on ({property.PropertyType.Name}) property '{property.Name}': {e.Message}");
+                        if(e is TargetInvocationException)
+                        {
+                            e = ((TargetInvocationException)e).InnerException;
+                        }
+                        errors.Add($"Error on ({property.PropertyType.Name}) property '{property.GetSourcePropertyName()}': {e.Message}");
                     }
                     if (requiredProperties.Contains(property)) requiredProperties.Remove(property);
                     return true;
@@ -231,7 +224,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
                 foreach (var property in headerProperties)
                 {
-                    var parameterInfo = property.GetCustomAttribute(typeof(FunctionParameterAttribute), true) as FunctionParameterAttribute;
+                    var parameterInfo = property.GetParams();
 
                     if (DigestProperty(property, headerItem.Key, headerValues[0], parameterInfo?.RemoveRequiredPrefix))
                     {
@@ -242,7 +235,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
             foreach (var property in requiredProperties)
             {
-                errors.Add($"Missing required parameter '{property.Name}'");
+                errors.Add($"Missing required parameter '{property.GetSourcePropertyName()}'");
             }
 
             if (errors.Count > 0) throw new ServiceOperationException(ServiceOperationError.BadParameter, string.Join("\r\n", errors));
@@ -277,5 +270,4 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         }
 
     }
-
 }
