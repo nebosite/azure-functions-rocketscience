@@ -128,15 +128,72 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         //------------------------------------------------------------------------------
         public static T ReadParameters<T>(HttpRequestMessage request) where T : new()
         {
-            T output = new T();
             var queryProperties = new List<PropertyInfo>();
             var headerProperties = new List<PropertyInfo>();
+            var requiredProperties = new List<PropertyInfo>();
+            var uriPairs = new List<KeyValuePair<string, string>>();
             var errors = new List<string>();
 
-            var requiredProperties = new List<PropertyInfo>();
+            uriPairs.AddRange(GetQueryNameValuePairs(request));
+
+            T output = ReadParameters<T>(request.Headers, uriPairs, queryProperties, headerProperties, requiredProperties, errors);
+
+            foreach(var uriParameter in uriPairs)
+            {
+                errors.Add($"Unknown URI parameter:  '{uriParameter.Key}'");
+            }
+
+            foreach (var property in requiredProperties)
+            {
+                errors.Add($"Missing required parameter '{property.GetSourcePropertyName()}'");
+            }
+
+            if (errors.Count > 0) throw new ServiceOperationException(ServiceOperationError.BadParameter, string.Join("\r\n", errors));
+            return output;
+        }
+        //------------------------------------------------------------------------------
+        /// <summary>
+        /// Generic way to handle parameters
+        /// </summary>
+            //------------------------------------------------------------------------------
+        private static T ReadParameters<T>(System.Net.Http.Headers.HttpRequestHeaders headers,
+            List<KeyValuePair<string,string>> uriParameters,
+            List<PropertyInfo> queryProperties,
+            List<PropertyInfo> headerProperties,
+            List<PropertyInfo> requiredProperties,
+            List<string> errors
+            ) where T : new()
+        {
+            T output = new T();
+
             foreach (var property in output.GetType().GetProperties())
             {
                 var parameterInfo = property.GetParams();
+                if (parameterInfo.Ignore)
+                {
+                    continue;
+                }
+
+                if (property.PropertyType.IsClass 
+                    && property.PropertyType.Name != "String"
+                    && !property.PropertyType.IsArray)
+                {
+                    try
+                    {
+                        var readParamesMethod = typeof(Vehicle).GetMethod("ReadParameters", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(property.PropertyType);
+                        property.SetValue(output, readParamesMethod.Invoke(null, new object[] { headers, uriParameters, queryProperties, headerProperties, requiredProperties, errors }));
+                    }
+                    catch (Exception e)
+                    {
+                        if (e is TargetInvocationException)
+                        {
+                            e = ((TargetInvocationException)e).InnerException;
+                        }
+                        errors.Add($"Error on property group '{property.Name}': {e.Message}");
+                    }
+                    continue;
+                }
+
                 if (parameterInfo.IsRequired)
                 {
                     requiredProperties.Add(property);
@@ -150,12 +207,14 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                     case ParameterIn.Header:
                         headerProperties.Add(property);
                         break;
-                    default: throw new ApplicationException("Can't get parameters from " + parameterInfo.Source);
+                    default:
+                        errors.Add($"Error on ({property.PropertyType.Name}) property '{property.GetSourcePropertyName()}':  Can't get parameters from " + parameterInfo.Source);
+                        break;
                 }
             }
 
             // Common way to read a property. Returns true if there was a property name match
-            bool DigestProperty(PropertyInfo property, string rawParameterName, string value, string prefix = null)
+            bool DigestProperty(PropertyInfo property, string rawParameterName, string parameterValue, string prefix = null)
             {
                 var propertyName = property.GetSourcePropertyName().ToLower();
                 var parameterName = rawParameterName.ToLower();
@@ -165,17 +224,17 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                     {
                         if (!string.IsNullOrEmpty(prefix))
                         {
-                            if (!value.StartsWith(prefix))
+                            if (!parameterValue.StartsWith(prefix))
                             {
                                 errors.Add($"Error on ({property.PropertyType.Name}) property '{property.GetSourcePropertyName()}': Required prefix '{prefix}' was missing.");
                                 return true;
                             }
-                            value = value.Substring(prefix.Length);
+                            parameterValue = parameterValue.Substring(prefix.Length);
                         }
 
                         if (property.PropertyType.IsArray)
                         {
-                            var parts = value.Split(',');
+                            var parts = parameterValue.Split(',');
                             var elementType = property.PropertyType.GetElementType();
                             var array = Array.CreateInstance(elementType, parts.Length);
                             for (int i = 0; i < parts.Length; i++)
@@ -186,7 +245,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                         }
                         else
                         {
-                            property.SetValue(output, ParseValue(property.PropertyType, value));
+                            property.SetValue(output, ParseValue(property.PropertyType, parameterValue));
                         }
                     }
                     catch (Exception e)
@@ -204,41 +263,34 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                 return false;
             }
 
-            foreach (var uriParameter in GetQueryNameValuePairs(request))
+            foreach (var uriParameter in uriParameters.ToArray())
             {
-                var foundIt = false;
                 foreach (var property in queryProperties)
                 {
                     if (DigestProperty(property, uriParameter.Key, uriParameter.Value))
                     {
-                        foundIt = true;
+                        uriParameters.Remove(uriParameter);
                         break;
                     }
                 }
-                if (!foundIt) errors.Add($"Unknown uri parameter '{uriParameter.Key}'");
             }
 
-            foreach (var headerItem in request.Headers)
+            foreach (var headerItem in headers)
             {
                 var headerValues = headerItem.Value.ToArray();
 
-                foreach (var property in headerProperties)
+                foreach (var property in headerProperties.ToArray())
                 {
                     var parameterInfo = property.GetParams();
 
                     if (DigestProperty(property, headerItem.Key, headerValues[0], parameterInfo?.RemoveRequiredPrefix))
                     {
+                        headerProperties.Remove(property);
                         break;
                     }
                 }
             }
 
-            foreach (var property in requiredProperties)
-            {
-                errors.Add($"Missing required parameter '{property.GetSourcePropertyName()}'");
-            }
-
-            if (errors.Count > 0) throw new ServiceOperationException(ServiceOperationError.BadParameter, string.Join("\r\n", errors));
             return output;
         }
 

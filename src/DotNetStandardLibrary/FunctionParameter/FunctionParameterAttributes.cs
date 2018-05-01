@@ -21,6 +21,11 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         public bool IsRequired { get; set; } = false;
 
         /// <summary>
+        /// If true, the RocketScience won't try to fill this value
+        /// </summary>
+        public bool Ignore { get; set; } = false;
+
+        /// <summary>
         /// If specified, will give an error if the prefix is not present
         /// otherwise will set the parameter value after removing prefix.
         /// e.g.:  Remove "Bearer " from an authorization token
