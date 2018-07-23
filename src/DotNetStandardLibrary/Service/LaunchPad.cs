@@ -302,9 +302,10 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         //--------------------------------------------------------------------------------
         public static async Task<HttpResponseMessage> ExecuteHttpTrigger(HttpRequestMessage req, IServiceLogger logger, params object[] extras)
         {
+            var requestKey = $"{req.Method}>{req.RequestUri.ToString()}";
             return Instance.SafelyTry(logger, () =>
             {
-                if(!_vehicles.TryGetValue(req.RequestUri.LocalPath, out var caller))
+                if(!_vehicles.TryGetValue(requestKey, out var caller))
                 {
                     var callingMethod = GetCallingAzureFunction();
                     var handlerProperty = callingMethod.DeclaringType.GetProperty("Handler", BindingFlags.Public | BindingFlags.Static);
@@ -317,7 +318,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                     }
 
                     caller = new Vehicle(callingMethod, handlerProperty);
-                    _vehicles.Add(req.RequestUri.LocalPath, caller);
+                    _vehicles.Add(requestKey, caller);
 
                 }
                 return caller.ExecuteHttpRequest(req, logger, extras);
