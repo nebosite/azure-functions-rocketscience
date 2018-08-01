@@ -7,7 +7,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AFRocketScienceStandard", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsForAFRocketScienceFramework", "..\tests\TestsForAFRocketScienceFramework\TestsForAFRocketScienceFramework.csproj", "{BB6A596A-07FA-4A3C-BBA1-224A28A5669E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFRocketScienceDotnetFramework", "AFRocketScienceDotnetFramework\AFRocketScienceDotnetFramework.csproj", "{42469803-A212-453A-994B-0E969B23390F}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AFRocketScienceShared", "AFRocketScienceShared\AFRocketScienceShared.shproj", "{A041B725-AD2E-4093-9160-E489C3A3A332}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		AFRocketScienceShared\AFRocketScienceShared.projitems*{42469803-a212-453a-994b-0e969b23390f}*SharedItemsImports = 4
+		AFRocketScienceShared\AFRocketScienceShared.projitems*{a041b725-ad2e-4093-9160-e489c3a3a332}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -21,6 +29,10 @@ Global
 		{BB6A596A-07FA-4A3C-BBA1-224A28A5669E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB6A596A-07FA-4A3C-BBA1-224A28A5669E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB6A596A-07FA-4A3C-BBA1-224A28A5669E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42469803-A212-453A-994B-0E969B23390F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42469803-A212-453A-994B-0E969B23390F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42469803-A212-453A-994B-0E969B23390F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42469803-A212-453A-994B-0E969B23390F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>a041b725-ad2e-4093-9160-e489c3a3a332</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>AFRocketScienceShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Configuration\KeyVault.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FunctionParameter\FunctionParameterAttributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FunctionParameter\FunctionParameterExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FunctionParameter\StandardRestQueryParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Service\IServiceLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Service\LaunchPad.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Service\ServiceOperationError.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Service\ServiceOperationException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Service\StandardResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Service\Vehicle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tools\AssemblyHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tools\ToolRunner.cs" />
+  </ItemGroup>
+</Project>

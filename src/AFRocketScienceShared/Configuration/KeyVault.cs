@@ -31,6 +31,11 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         {
             this._keyVaultUrl = keyVaultUrl;
             ApplicationCertificate = FindCertificateByThumbprint(thumbprint);
+            if(ApplicationCertificate == null)
+            {
+                throw new ApplicationException("Could not find certificate with Thumbprint: " + thumbprint);
+            }
+
            _keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(
                     async (string authority, string resource, string scope) =>
                     {
