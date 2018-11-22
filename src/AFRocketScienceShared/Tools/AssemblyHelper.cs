@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace ES.Release.Trajectory.CorpnetServices.Api
+namespace Microsoft.Azure.Functions.AFRocketScience
 {
     //--------------------------------------------------------------------------------
     /// <summary>
@@ -17,7 +17,8 @@ namespace ES.Release.Trajectory.CorpnetServices.Api
         /// Redirection hack because Azure functions don't support it.
         /// How to use:  
         ///     If you get an error that a certain version of a dll can't be found:
-        ///         1) deploy that particular dll in any project subfolder 
+        ///         1) deploy that particular dll in any project subfolder by adding the 
+        ///            dll to your project as "content" that is "copied if newer"
         ///         2) In your azure function static constructor, Call 
         ///             AssemblyHelper.IncludeSupplementalDllsWhenBinding()
         ///         
@@ -53,9 +54,12 @@ namespace ES.Release.Trajectory.CorpnetServices.Api
                     var home = Environment.GetEnvironmentVariable("HOME") ?? ".";
                     
                     var possibleFiles = Directory.GetFiles(home, requestedAssembly.Name + ".dll", SearchOption.AllDirectories);
+                    Debug.WriteLine("Requested version: " + requestedAssembly.Version);
                     foreach (var file in possibleFiles)
                     {
                         var possibleAssembly = AssemblyName.GetAssemblyName(file);
+                        Debug.WriteLine("Found version: " + possibleAssembly.Version + " at " + file);
+
                         if (possibleAssembly.Version == requestedAssembly.Version)
                         {
                             foundAssembly = Assembly.Load(possibleAssembly);

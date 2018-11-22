@@ -131,12 +131,13 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             var queryProperties = new List<PropertyInfo>();
             var headerProperties = new List<PropertyInfo>();
             var requiredProperties = new List<PropertyInfo>();
+            var bodyProperties = new List<PropertyInfo>();
             var uriPairs = new List<KeyValuePair<string, string>>();
             var errors = new List<string>();
 
             uriPairs.AddRange(GetQueryNameValuePairs(request));
 
-            T output = ReadParameters<T>(request.Headers, uriPairs, queryProperties, headerProperties, requiredProperties, errors);
+            T output = ReadParameters<T>(request, uriPairs, queryProperties, headerProperties, requiredProperties, bodyProperties, errors);
 
             foreach(var uriParameter in uriPairs)
             {
@@ -156,15 +157,18 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Generic way to handle parameters
         /// </summary>
             //------------------------------------------------------------------------------
-        private static T ReadParameters<T>(System.Net.Http.Headers.HttpRequestHeaders headers,
+        private static T ReadParameters<T>(
+            HttpRequestMessage request,
             List<KeyValuePair<string,string>> uriParameters,
             List<PropertyInfo> queryProperties,
             List<PropertyInfo> headerProperties,
             List<PropertyInfo> requiredProperties,
+            List<PropertyInfo> bodyProperties,
             List<string> errors
             ) where T : new()
         {
             T output = new T();
+            var headers = request.Headers;
 
             foreach (var property in output.GetType().GetProperties())
             {
@@ -206,6 +210,9 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                         break;
                     case ParameterIn.Header:
                         headerProperties.Add(property);
+                        break;
+                    case ParameterIn.Body:
+                        bodyProperties.Add(property);
                         break;
                     default:
                         errors.Add($"Error on ({property.PropertyType.Name}) property '{property.GetSourcePropertyName()}':  Can't get parameters from " + parameterInfo.Source);
@@ -290,6 +297,18 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                     }
                 }
             }
+
+            if (bodyProperties.Count > 1)
+            {
+                errors.Add("There can be only one body property, but this many were found: " + bodyProperties.Count);
+            }
+            else if (bodyProperties.Count == 1)
+            {
+                var bodyText = request.Content.ReadAsStringAsync().Result;
+                bodyProperties[0].SetValue(output, bodyText );
+                if (requiredProperties.Contains(bodyProperties[0])) requiredProperties.Remove(bodyProperties[0]);
+            }
+
 
             return output;
         }
