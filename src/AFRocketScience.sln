@@ -11,6 +11,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AFRocketScienceDotnetFramew
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AFRocketScienceShared", "AFRocketScienceShared\AFRocketScienceShared.shproj", "{A041B725-AD2E-4093-9160-E489C3A3A332}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{FE17E9EB-1D54-45F9-9273-FE083660FD16}"
+	ProjectSection(SolutionItems) = preProject
+		TODO.txt = TODO.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		AFRocketScienceShared\AFRocketScienceShared.projitems*{42469803-a212-453a-994b-0e969b23390f}*SharedItemsImports = 4

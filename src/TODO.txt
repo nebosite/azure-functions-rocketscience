@@ -1,0 +1,16 @@
+
+TODO
+
+    https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio
+    [ ] Automatically find and call your controller handler:
+        return LaunchPad.CallHandler(Handler.method, req, new MyLogger(log))
+        [ ] looks are arguments and fills them up if they are there.
+            [ ] parameter handling
+        [ ] Auto-calls safely try
+    [ ] Swagger auto-gen would be super
+
+
+    [ ] RocketScience:  Hard to discover which function is called in the handler
+    [ ] RocketScience: Better demos
+    [ ] RocketScience: Docs for nuget (readme)
+    [ ] RocketScience: Swagger docs break on duplicate paths

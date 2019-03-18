@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace icrosoft.Azure.Functions.AFRocketScience.Tools
+namespace Microsoft.Azure.Functions.AFRocketScience
 {
     //---------------------------------------------------------------------------------
     /// <summary>

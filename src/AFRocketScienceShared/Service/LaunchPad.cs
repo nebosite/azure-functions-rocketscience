@@ -332,12 +332,16 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         //--------------------------------------------------------------------------------
         static string GetExceptionHint(Exception e)
         {
+#if DEBUG
             var stackTrace = e.StackTrace;
             if (stackTrace == null) stackTrace = "";
             var match = Regex.Match(stackTrace, @"\\([^\\]*:line [0-9]+)");
             var firstLineInfo = match.Success ? $" ({match.Groups[1].Value})" : " (Unknown location)";
 
             return $"Debug hint: {e.Message}{firstLineInfo}";
+#else
+            return "";
+#endif
         }
 
         //--------------------------------------------------------------------------------
