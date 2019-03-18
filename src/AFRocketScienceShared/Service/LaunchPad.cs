@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Ok response 
         /// </summary>
         //--------------------------------------------------------------------------------
-        internal HttpResponseMessage Ok(object output = null)
+        public static HttpResponseMessage Ok(object output = null)
         {
             var response = new ServiceResponse(output);
             return new HttpResponseMessage(HttpStatusCode.OK)
@@ -400,7 +400,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Error response 
         /// </summary>
         //--------------------------------------------------------------------------------
-        internal HttpResponseMessage Error(Exception error, IServiceLogger logger)
+        public static HttpResponseMessage Error(Exception error, IServiceLogger logger)
         {
             if (error is TargetInvocationException) error = ((TargetInvocationException)error).InnerException;
             var logKey = CurrentLogKey;
