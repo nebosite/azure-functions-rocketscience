@@ -1,6 +1,19 @@
 
 TODO
 
+	[ ] Document how to build against AFRS
+        - Create a .net standard library and link this against RocketScience
+        - Create a Tracelogger in Function project (Idea: Keep service  library from knowing about azure, keep azure from knowing about service library details)
+        - Add Myhandler property
+        - Call your handler like this: return await LaunchPad.ExecuteHttpTrigger(req, new TraceLogger(log));
+        - Service Library references
+            [ ] KILL: Microsoft.Extensions.Configuration.AzureKeyVault
+            - swagger.objectmodel
+            - Microsoft.IdentityModel.ClientsActiveDirectory
+            newtonsoft.json (9)
+            System.Net.Http
+            Microsoft.AspNetCore.Http
+
     https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-visual-studio
     [ ] Automatically find and call your controller handler:
         return LaunchPad.CallHandler(Handler.method, req, new MyLogger(log))
