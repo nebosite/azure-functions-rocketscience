@@ -14,3 +14,8 @@ TODO
     [ ] RocketScience: Better demos
     [ ] RocketScience: Docs for nuget (readme)
     [ ] RocketScience: Swagger docs break on duplicate paths
+
+=== DONE ==========================================================================================================
+
+Version 0.0.6.0
+	[ ] Bug fixes
