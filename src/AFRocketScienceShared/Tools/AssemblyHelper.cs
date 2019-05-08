@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
     //--------------------------------------------------------------------------------
     public static class AssemblyHelper
     {
+        static bool _called = false;
         //--------------------------------------------------------------------------------
         /// <summary>
         /// Redirection hack because Azure functions don't support it.
@@ -28,6 +29,8 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         //--------------------------------------------------------------------------------
         public static void IncludeSupplementalDllsWhenBinding()
         {
+            if (_called) return;
+            _called = true;
             var searching = false;
 
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>

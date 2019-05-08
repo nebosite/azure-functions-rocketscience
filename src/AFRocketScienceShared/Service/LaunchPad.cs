@@ -368,7 +368,6 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// is regular. 
         /// </summary>
         //--------------------------------------------------------------------------------
-        // TODO: replace TraceWriter with ILogger based logging service for easy testing.
         internal HttpResponseMessage SafelyTry(IServiceLogger logger, Func<object> tryme)
         {
             try

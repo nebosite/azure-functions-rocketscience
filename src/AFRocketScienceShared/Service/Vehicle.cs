@@ -178,14 +178,18 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                     continue;
                 }
 
+                // If the property is a class that is not coming from the body,
+                // then treat the properties properties as first class parameters
                 if (property.PropertyType.IsClass 
                     && property.PropertyType.Name != "String"
-                    && !property.PropertyType.IsArray)
+                    && !property.PropertyType.IsArray
+                    && parameterInfo.Source != ParameterIn.Body)
                 {
                     try
                     {
                         var readParamesMethod = typeof(Vehicle).GetMethod("ReadParameters", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(property.PropertyType);
-                        property.SetValue(output, readParamesMethod.Invoke(null, new object[] { headers, uriParameters, queryProperties, headerProperties, requiredProperties, errors }));
+
+                        property.SetValue(output, readParamesMethod.Invoke(null, new object[] { request, uriParameters, queryProperties, headerProperties, requiredProperties, bodyProperties, errors }));
                     }
                     catch (Exception e)
                     {
@@ -250,6 +254,10 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                             }
                             property.SetValue(output, array);
                         }
+                        if (property.PropertyType.IsClass &&  property.PropertyType.Name != "String")
+                        {
+                            property.SetValue(output, JsonConvert.DeserializeObject(parameterValue, property.PropertyType));
+                        }
                         else
                         {
                             property.SetValue(output, ParseValue(property.PropertyType, parameterValue));
@@ -305,7 +313,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             else if (bodyProperties.Count == 1)
             {
                 var bodyText = request.Content.ReadAsStringAsync().Result;
-                bodyProperties[0].SetValue(output, bodyText );
+                DigestProperty(bodyProperties[0], bodyProperties[0].Name, bodyText);
                 if (requiredProperties.Contains(bodyProperties[0])) requiredProperties.Remove(bodyProperties[0]);
             }
 
