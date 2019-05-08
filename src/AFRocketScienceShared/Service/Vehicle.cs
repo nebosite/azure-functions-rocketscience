@@ -300,7 +300,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
             if (bodyProperties.Count > 1)
             {
-                errors.Add("There can be only one body property, but this many were found: " + bodyProperties.Count);
+                errors.Add("There can be only parameter that comes from the body.  Body parameters: " + string.Join(",", bodyProperties.Select(bp => bp.Name)));
             }
             else if (bodyProperties.Count == 1)
             {
