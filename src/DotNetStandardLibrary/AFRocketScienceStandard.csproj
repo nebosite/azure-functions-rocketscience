@@ -4,22 +4,17 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>icrosoft.Azure.Functions.AFRocketScience</RootNamespace>
     <PackageId>RocketScience.Azure.Functions</PackageId>
-    <Version>0.0.5</Version>
+    <Version>0.0.5.1</Version>
     <Authors>Eric Jorgensen</Authors>
     <Company>Microsoft</Company>
     <Product>RocketScience For Azure Functions</Product>
     <Description>Tools to help quickly write Azure Functions</Description>
     <PackageLicenseUrl>https://github.com/nebosite/azure-functions-rocketscience/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/nebosite/azure-functions-rocketscience</PackageProjectUrl>
-    <AssemblyVersion>0.0.5.0</AssemblyVersion>
+    <AssemblyVersion>0.0.5.1</AssemblyVersion>
     <PackageTags>Azure Azure-Functions Functions Cloud</PackageTags>
-    <PackageReleaseNotes>Bug fix:  DIfferent functions wit the same uri path are confusing launchpag
-Added tools to help with managing local binaries  (AssemblyHelper)
-Added ability to compose parameter classes in addition to inheriting them
-Breaking change: FixPropertyName -&gt; SourcePropertyName
-Added handling of extra parameters in httpTrigger
-</PackageReleaseNotes>
-    <FileVersion>0.0.5.0</FileVersion>
+    <PackageReleaseNotes>Troubleshooting nuget problems</PackageReleaseNotes>
+    <FileVersion>0.0.5.1</FileVersion>
     <DebugType>Full</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
