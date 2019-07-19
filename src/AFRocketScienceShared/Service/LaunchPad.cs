@@ -58,7 +58,17 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             {
                 if (_docs == null)
                 {
-                    _docs = GenerateSwagger(req, logger, Assembly.GetCallingAssembly());
+                    try
+                    {
+                        _docs = GenerateSwagger(req, logger, Assembly.GetCallingAssembly());
+                    }
+                    catch (Exception e)
+                    {
+                        var errorResponse = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                        errorResponse.Content = new StringContent($"Docs Error: {e.Message}");
+                        errorResponse.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+                        return errorResponse;
+                    }
                 }
 
                 var response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -88,10 +98,10 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             content.AppendLine($"{docs.Info.Title} Version {docs.Info.Version}");
             content.AppendLine($"\r\nPaths: ");
 
-            void DoOperation(string path, string type, Operation operation)
+            void DoOperation(string path, Operation operation)
             {
                 if (operation == null) return;
-                content.AppendLine($"    {docs.BasePath}{path} ({type})");
+                content.AppendLine($"    {docs.BasePath}{path}");
                 content.AppendLine($"        Parameters:");
                 foreach(var parameter in operation.Parameters)
                 {
@@ -113,13 +123,13 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
             foreach (var pathEntry in docs.Paths)
             {
-                DoOperation(pathEntry.Key, "get", pathEntry.Value.Get);
-                DoOperation(pathEntry.Key, "delete", pathEntry.Value.Delete);
-                DoOperation(pathEntry.Key, "head", pathEntry.Value.Head);
-                DoOperation(pathEntry.Key, "options", pathEntry.Value.Options);
-                DoOperation(pathEntry.Key, "patch", pathEntry.Value.Patch);
-                DoOperation(pathEntry.Key, "post", pathEntry.Value.Post);
-                DoOperation(pathEntry.Key, "put", pathEntry.Value.Put);
+                DoOperation(pathEntry.Key, pathEntry.Value.Get);
+                DoOperation(pathEntry.Key, pathEntry.Value.Delete);
+                DoOperation(pathEntry.Key, pathEntry.Value.Head);
+                DoOperation(pathEntry.Key, pathEntry.Value.Options);
+                DoOperation(pathEntry.Key, pathEntry.Value.Patch);
+                DoOperation(pathEntry.Key, pathEntry.Value.Post);
+                DoOperation(pathEntry.Key, pathEntry.Value.Put);
             }
 
             content.AppendLine($"Security:");
@@ -171,6 +181,13 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             var paths = new Dictionary<string, PathItem>();
 
 
+            string GetKeyFromTrigger(object httpTriggerAttribute)
+            {
+                return GetPropertyValue<string>(httpTriggerAttribute, "Route") 
+                    + " (" 
+                    + string.Join(",", GetPropertyValue<string[]>(httpTriggerAttribute, "Methods")) + ")";
+            }
+
             // Go through all the types in the calling assembly
             foreach (var type in functionAssembly.GetTypes())
             {
@@ -190,7 +207,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                     // By convention, we'll exclude the azure function calling us
                     if (method.Name == caller.Name && method.DeclaringType.Name == caller.DeclaringType.Name) continue;
 
-                    paths.Add(GetPropertyValue<string>(httpTriggerAttribute, "Route"), CreatePathItemFromMethod(method));
+                    paths.Add(GetKeyFromTrigger(httpTriggerAttribute), CreatePathItemFromMethod(method));
                 }
             }
 
@@ -231,6 +248,11 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             
             var handlerProperty = azureFunction.DeclaringType.GetProperty("Handler", BindingFlags.Public | BindingFlags.Static);
             var handlerMethod = handlerProperty.PropertyType.GetMethod(azureFunction.Name);
+
+            if(handlerMethod == null)
+            {
+                throw new ApplicationException($"No handler method was found for {azureFunction.Name} ({string.Join(",", GetPropertyValue<string[]>(httpTriggerAttribute, "Methods"))})");
+            }
 
             var parameters = new  List<Parameter>();
             foreach(var property in handlerMethod.GetParameters()[0].ParameterType.GetProperties())
