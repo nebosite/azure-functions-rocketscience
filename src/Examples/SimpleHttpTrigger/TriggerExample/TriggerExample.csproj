@@ -8,7 +8,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\DotNetStandardLibrary\AFRocketScienceStandard.csproj" />
-    <ProjectReference Include="..\ServiceLibrary\ServiceLibrary.csproj" />
+    <ProjectReference Include="..\ServiceLibrary\TriggerExampleServiceLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

@@ -21,7 +21,9 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         public bool IsRequired { get; set; } = false;
 
         /// <summary>
-        /// If true, the RocketScience won't try to fill this value
+        /// Set this to true if the property should not be considered as a parameter.
+        /// If true, the RocketScience won't try to fill this value, but if it is
+        /// specified in the call, there will be an unknown parameter error
         /// </summary>
         public bool Ignore { get; set; } = false;
 

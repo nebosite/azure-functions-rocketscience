@@ -313,7 +313,14 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             else if (bodyProperties.Count == 1)
             {
                 var bodyText = request.Content.ReadAsStringAsync().Result;
-                DigestProperty(bodyProperties[0], bodyProperties[0].Name, bodyText);
+                try
+                {
+                    bodyProperties[0].SetValue(output, JsonConvert.DeserializeObject(bodyText, bodyProperties[0].PropertyType));
+                }
+                catch(Exception e)
+                {
+                    errors.Add($"Could not create parameter '{bodyProperties[0].Name}' from the posted body because: {e.Message}");
+                }
                 if (requiredProperties.Contains(bodyProperties[0])) requiredProperties.Remove(bodyProperties[0]);
             }
 

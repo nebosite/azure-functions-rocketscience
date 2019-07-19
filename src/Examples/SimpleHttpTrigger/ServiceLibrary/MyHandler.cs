@@ -40,6 +40,18 @@ namespace ServiceLibrary
             /// </summary>
             [FunctionParameter(Source = ParameterIn.Header)]
             public string[] FishTypes { get; set; }
+
+            public class Salutation
+            {
+                public string Text { get; set; }
+                public int Value { get; set; }
+            }
+
+            /// <summary>
+            /// One parameter can be fully constructed from the body, assuming the body is JSON text
+            /// </summary>
+            [FunctionParameter(Source = ParameterIn.Body)]
+            public Salutation[] Salutations { get; set; }
         }
 
         //------------------------------------------------------------------------------
@@ -47,11 +59,16 @@ namespace ServiceLibrary
         /// The handler for the Azure function "GetStuff"
         /// </summary>
         //------------------------------------------------------------------------------
-        public Stuff GetStuff(HelloArguments args, IServiceLogger log)
+        public object GetStuff(HelloArguments args, IServiceLogger log)
         {
             // The signature of the handler method is important.  First argument should be
             // your own special argument class that RocketScience will fill out for you.
             // The Second argument must be an IServiceLogger.  
+
+            // The return type can be anything, even void.   RocketScience will automatically package
+            // it in the "Values" section of the return JSON.
+            // Except when:  If the function returns an HttpResponse, this with bypass the rocketscience
+            // package logic and just return the response the function created.
 
             // THROWING EXCEPTIONS:
             // If you want to throw an exception: throw a ServiceOperationException and include a message
@@ -67,20 +84,16 @@ namespace ServiceLibrary
 
             // You can return anything you want.  RocketScience will automatically package it
             // in the "Values" property on the return object. 
-            return new Stuff()
+            return new 
             {
                 Description = "Something old, something new" + 
                     (args.FishTypes == null ? "" : string.Join("", args.FishTypes.Select(a => ", something " + a))),
-                AwesomeFactor = 1000 * args.UserId
+                AwesomeFactor = 1000 * args.UserId,
+                StuffFromBody = args.Salutations
             };
-
         }
 
     }
 
-    public class Stuff
-    {
-        public string Description { get; set; }
-        public int AwesomeFactor { get; set; }
-    }
+
 }
