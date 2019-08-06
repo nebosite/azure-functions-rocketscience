@@ -1,6 +1,9 @@
 
 TODO
 
+    [ ] RocketScience: process Rocketscience attributes for container classes
+        - We want to auto-verify arguments that come in from the body
+
 	[ ] Document how to build against AFRS
         - Create a .net standard library and link this against RocketScience
         - Create a Tracelogger in Function project (Idea: Keep service  library from knowing about azure, keep azure from knowing about service library details)
