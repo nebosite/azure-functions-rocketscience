@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
             var output = new RandomException("Bumper Boats", "Abba\\Dabba\\foobar:line 232\r\nShoe\\Lollipop\\gumby:line 444");
             var result = LaunchPad.Error(output, mockLogger);
             AssertEx.AreEqual(HttpStatusCode.InternalServerError, result.StatusCode);
-            AssertEx.AreEqual(1, mockLogger.Errors.Count);
+            AssertEx.AreEqual(1, mockLogger.Logs.Count);
 
             var stuff = JsonConvert.DeserializeObject<TestResponse>(
                 result.Content.ReadAsStringAsync().Result);
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
             var output = new ServiceOperationException(ServiceOperationError.BadParameter, "Yuba bears");
             var result = LaunchPad.Error(output, mockLogger);
             AssertEx.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
-            AssertEx.AreEqual(1, mockLogger.Errors.Count);
+            AssertEx.AreEqual(1, mockLogger.Logs.Count);
 
             var stuff = JsonConvert.DeserializeObject<TestResponse>(
                 result.Content.ReadAsStringAsync().Result);

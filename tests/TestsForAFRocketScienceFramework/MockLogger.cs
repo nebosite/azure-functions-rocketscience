@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
     [ExcludeFromCodeCoverage]
     class MockLogger : ILogger
     {
-        public List<string> Errors = new List<string>();
+        public List<string> Logs = new List<string>();
 
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -26,12 +26,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            throw new NotImplementedException();
-        }
-
-        public void LogError(string message, params object[] items)
-        {
-            Errors.Add(message + " * " + ((Exception)items[0]).Message);
+            Logs.Add($"{logLevel} {eventId} {state} {exception?.Message}"); 
         }
     }
 }
