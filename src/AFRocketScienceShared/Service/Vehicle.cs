@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
             foreach (var property in output.GetType().GetProperties())
             {
-                var parameterInfo = property.GetParams();
+                var parameterInfo = property.GetRocketScienceAttribute();
                 if (parameterInfo.Ignore)
                 {
                     continue;
@@ -254,7 +254,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                             }
                             property.SetValue(output, array);
                         }
-                        if (property.PropertyType.IsClass &&  property.PropertyType.Name != "String")
+                        else if (property.PropertyType.IsClass &&  property.PropertyType.Name != "String")
                         {
                             property.SetValue(output, JsonConvert.DeserializeObject(parameterValue, property.PropertyType));
                         }
@@ -296,7 +296,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
                 foreach (var property in headerProperties.ToArray())
                 {
-                    var parameterInfo = property.GetParams();
+                    var parameterInfo = property.GetRocketScienceAttribute();
 
                     if (DigestProperty(property, headerItem.Key, headerValues[0], parameterInfo?.RemoveRequiredPrefix))
                     {
@@ -312,21 +312,76 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             }
             else if (bodyProperties.Count == 1)
             {
-                var bodyText = request.Content.ReadAsStringAsync().Result;
-                try
+                if(request.Content == null)
                 {
-                    bodyProperties[0].SetValue(output, JsonConvert.DeserializeObject(bodyText, bodyProperties[0].PropertyType));
+                    errors.Add("The POST body response is missing");
                 }
-                catch(Exception e)
+                else
                 {
-                    errors.Add($"Could not create parameter '{bodyProperties[0].Name}' from the posted body because: {e.Message}");
+                    var bodyText = request.Content.ReadAsStringAsync().Result;
+                    try
+                    {
+                        var bodyValue = JsonConvert.DeserializeObject(bodyText, bodyProperties[0].PropertyType);
+                        if(bodyValue != null)
+                        {
+                            bodyProperties[0].SetValue(output, bodyValue);
+                            if (requiredProperties.Contains(bodyProperties[0])) requiredProperties.Remove(bodyProperties[0]);
+                            FlagErrors(bodyValue, errors);
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        errors.Add($"Could not create parameter '{bodyProperties[0].Name}' from the posted body because: {e.Message}");
+                    }
                 }
-                if (requiredProperties.Contains(bodyProperties[0])) requiredProperties.Remove(bodyProperties[0]);
             }
 
 
             return output;
         }
+
+        //------------------------------------------------------------------------------
+        /// <summary>
+        /// Look at the properties on this object and see if they follow the 
+        /// function parameter requirements
+        /// </summary>
+        //------------------------------------------------------------------------------
+        private static void FlagErrors(object bodyValue, List<string> errors)
+        {
+            var enumerableBody = bodyValue as IEnumerable<object>;
+            if(enumerableBody != null)
+            {
+                int count = 0;
+                foreach(var item in enumerableBody)
+                {
+                    count++;
+                    FlagErrorsOnItem($"Item {count}: ", item, errors);
+                }
+            }
+            else
+            {
+                FlagErrorsOnItem($"Item from body ", bodyValue, errors);
+            }
+        }
+
+        //------------------------------------------------------------------------------
+        /// <summary>
+        /// Look at the properties on this object and see if they follow the 
+        /// function parameter requirements
+        /// </summary>
+        //------------------------------------------------------------------------------
+        private static void FlagErrorsOnItem(string prefix, object item, List<string> errors)
+        {
+            foreach(var property in item.GetType().GetProperties())
+            {
+                var attribute = property.GetRocketScienceAttribute();
+                if(attribute.IsRequired && property.GetValue(item) == null)
+                {
+                    errors.Add($"{prefix}missing required parameter '{property.Name}'");
+                }
+            }
+        }
+
 
         //------------------------------------------------------------------------------
         /// <summary>

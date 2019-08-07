@@ -4,6 +4,7 @@ using System.Net.Http;
 using Microsoft.Azure.Functions.AFRocketScience;
 using Swagger.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Microsoft.Azure.Functions.AFRocketScienceTests
 {
@@ -15,9 +16,14 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         //------------------------------------------------------------------------------
         //  Helper to make httprequests
         //------------------------------------------------------------------------------
-        HttpRequestMessage MakeHttpRequest(string urlParameters)
+        HttpRequestMessage MakeHttpRequest(string urlParameters, string bodyJson = null)
         {
-            return new HttpRequestMessage(System.Net.Http.HttpMethod.Post, $"http://foo.bar.com/app?{urlParameters}");
+            var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Post, $"http://foo.bar.com/app?{urlParameters}");
+            if(bodyJson != null)
+            {
+                request.Content = new StringContent(bodyJson, Encoding.UTF8, "application/json");
+            }
+            return request;
         }
 
         public enum TestBlots
@@ -108,6 +114,42 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
             AssertEx.AreEqual(ServiceOperationError.BadParameter, result.ErrorCode);
         }
 
+        class HasRequiredBody
+        {
+            public class BodyItem
+            {
+                [FunctionParameter(IsRequired = true)]
+                public string Name { get; set; }
+            }
+
+            [FunctionParameter(Source = ParameterIn.Body, IsRequired = true)]
+            public BodyItem[] BodyItems { get; set; }
+        }
+
+
+        //------------------------------------------------------------------------------
+        //
+        //------------------------------------------------------------------------------
+        [TestMethod]
+        [TestCategory("CheckInGate")]
+        public void ReadParameters_Throws_OnMissingRequiredzzzzBodyParameter()
+        {
+            var request = MakeHttpRequest("");
+            var result = Assert.ThrowsException<ServiceOperationException>(() => Vehicle.ReadParameters<HasRequiredBody>(request));
+            AssertEx.AreEqual("The POST body response is missing\r\nMissing required parameter 'BodyItems'", result.Message);
+            AssertEx.AreEqual(ServiceOperationError.BadParameter, result.ErrorCode);
+
+            request = MakeHttpRequest("", "");
+            result = Assert.ThrowsException<ServiceOperationException>(() => Vehicle.ReadParameters<HasRequiredBody>(request));
+            AssertEx.AreEqual("Missing required parameter 'BodyItems'", result.Message);
+            AssertEx.AreEqual(ServiceOperationError.BadParameter, result.ErrorCode);
+
+            request = MakeHttpRequest("", "[{\"Name\":\"foo\"},{}]");
+            result = Assert.ThrowsException<ServiceOperationException>(() => Vehicle.ReadParameters<HasRequiredBody>(request));
+            AssertEx.AreEqual("Item 2: missing required parameter 'Name'", result.Message);
+            AssertEx.AreEqual(ServiceOperationError.BadParameter, result.ErrorCode);
+        }
+
         //------------------------------------------------------------------------------
         //
         //------------------------------------------------------------------------------
@@ -118,7 +160,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
             var request = MakeHttpRequest("turtLE=blah&NotAParameter=1");
 
             var result = Assert.ThrowsException<ServiceOperationException>(() => Vehicle.ReadParameters<HappyParameters>(request));
-            AssertEx.AreEqual("Unknown uri parameter 'turtLE'\r\nUnknown uri parameter 'NotAParameter'", result.Message);
+            AssertEx.AreEqual("Unknown URI parameter:  'turtLE'\r\nUnknown URI parameter:  'NotAParameter'", result.Message);
             AssertEx.AreEqual(ServiceOperationError.BadParameter, result.ErrorCode);
         }
 

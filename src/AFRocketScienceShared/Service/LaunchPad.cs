@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             var parameters = new  List<Parameter>();
             foreach(var property in handlerMethod.GetParameters()[0].ParameterType.GetProperties())
             {
-                var functionInfo = property.GetParams();
+                var functionInfo = property.GetRocketScienceAttribute();
                 var name = property.GetSourcePropertyName();
 
                 parameters.Add(new Parameter()

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
     //------------------------------------------------------------------------------
     public static class FunctionParameterExtensions
     {
-        public static FunctionParameterAttribute GetParams(this PropertyInfo property)
+        public static FunctionParameterAttribute GetRocketScienceAttribute(this PropertyInfo property)
         {
             var parameterInfo = property.GetCustomAttribute(typeof(FunctionParameterAttribute), true) as FunctionParameterAttribute;
             return parameterInfo == null ? new FunctionParameterAttribute() : parameterInfo;
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
         public static string GetSourcePropertyName(this PropertyInfo property)
         { 
-            var parameterInfo = property.GetParams();
+            var parameterInfo = property.GetRocketScienceAttribute();
             return parameterInfo.SourcePropertyName != null ? parameterInfo.SourcePropertyName : property.Name;
         }
     }

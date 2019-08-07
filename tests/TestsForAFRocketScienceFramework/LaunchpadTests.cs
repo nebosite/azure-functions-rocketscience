@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Linq;
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
             var target = new LaunchPad();
             var mockLogger = new MockLogger();
             var output = new RandomException("Bumper Boats", "Abba\\Dabba\\foobar:line 232\r\nShoe\\Lollipop\\gumby:line 444");
-            var result = target.Error(output, mockLogger);
+            var result = LaunchPad.Error(output, mockLogger);
             AssertEx.AreEqual(HttpStatusCode.InternalServerError, result.StatusCode);
             AssertEx.AreEqual(1, mockLogger.Errors.Count);
 
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
             var target = new LaunchPad();
             var mockLogger = new MockLogger();
             var output = new ServiceOperationException(ServiceOperationError.BadParameter, "Yuba bears");
-            var result = target.Error(output, mockLogger);
+            var result = LaunchPad.Error(output, mockLogger);
             AssertEx.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
             AssertEx.AreEqual(1, mockLogger.Errors.Count);
 
@@ -133,18 +133,11 @@ namespace Microsoft.Azure.Functions.AFRocketScienceTests
         {
             // valuetypes are serialized as one element value array
             var target = new LaunchPad();
-            var result = target.Ok("A string");
+            var result = LaunchPad.Ok("A string");
             AssertEx.AreEqual(HttpStatusCode.OK, result.StatusCode);
-            AssertEx.AreEqual(
-@"{
-  ""Count"": 1,
-  ""ErrorCode"": null,
-  ""Values"": [
-    ""A string""
-  ],
-  ""ErrorMessage"": null
-}"
-            , result.Content.ReadAsStringAsync().Result);
+
+            var expectedResult = new ServiceResponse("A string");
+            AssertEx.AreEqual(JsonConvert.SerializeObject(expectedResult, Formatting.Indented) , result.Content.ReadAsStringAsync().Result);
         }
 
         
