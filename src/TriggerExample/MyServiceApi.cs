@@ -1,14 +1,12 @@
-using System;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.AFRocketScience;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
-using ServiceLibrary;
+using TriggerExampleServiceLibrary;
 
 namespace TriggerExample
 {
@@ -28,7 +26,7 @@ namespace TriggerExample
         [FunctionName("GetStuff")]
         public static async Task<HttpResponseMessage> GetStuff(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "v1/stuff")]
-            HttpRequestMessage req, 
+            HttpRequestMessage req,
             ILogger log)
         {
             // Launchpad will automatically call Handler.GetStuff - it always looks
@@ -61,11 +59,10 @@ namespace TriggerExample
         [FunctionName("Docs")]
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "v1/docs")]
-            HttpRequestMessage req,
+            HttpRequest req,
             ILogger log)
         {
             return LaunchPad.ShowSwaggerHtmlResponse(req, log);
         }
-
     }
 }

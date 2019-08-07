@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ServiceLibrary
+namespace TriggerExampleServiceLibrary
 {
     public class MyHandler
     {
@@ -69,7 +69,7 @@ namespace ServiceLibrary
         void Authorize(CommonArguments args)
         {
             // Naturally, you will put your own real authorization code here.  
-            if(args.BearerToken != "funbucket")
+            if (args.BearerToken != "funbucket")
             {
                 throw new ServiceOperationException(ServiceOperationError.AuthorizationError, "The bearer token is supposed to be 'funbucket'");
             }
@@ -83,7 +83,7 @@ namespace ServiceLibrary
             public string Description { get; set; }
             public int AwesomeFactor { get; set; }
         }
-        
+
         //------------------------------------------------------------------------------
         /// <summary>
         /// The handler for the Azure function "GetStuff"
@@ -173,6 +173,5 @@ namespace ServiceLibrary
             return args.StuffItems.Length < 2;
         }
     }
-
-
 }
+

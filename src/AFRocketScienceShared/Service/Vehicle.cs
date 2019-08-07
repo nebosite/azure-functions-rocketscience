@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Swagger.ObjectModel;
 using System;
@@ -28,7 +29,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
         class ParameterDefinition
         {
-            public Func<HttpRequestMessage, ILogger, object[], object> Create { get; set; }
+            public Func<IRocketScienceRequest, ILogger, object[], object> Create { get; set; }
         }
 
         //------------------------------------------------------------------------------
@@ -49,7 +50,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Execute this call as an Http request
         /// </summary>
         //------------------------------------------------------------------------------
-        public object ExecuteHttpRequest(HttpRequestMessage req, ILogger logger, params object[] extras)
+        public object ExecuteHttpRequest(IRocketScienceRequest req, ILogger logger, params object[] extras)
         {
             var handler = _handlerStaticProperty.GetValue(null);
             var generatedParameters = new List<object>();
@@ -75,10 +76,10 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                     Create = (r, l, e) => _constructParameters.Invoke(null, new object[] { r })
                 });
 
-                // The second parameter is just the passed in IserviceLogger
-                if (targetParameters[1].ParameterType.Name != "IServiceLogger")
+                // The second parameter is just the passed in ILogger
+                if (targetParameters[1].ParameterType.Name != nameof(ILogger))
                 {
-                    throw new ApplicationException($"The target method '{_callMe.Name}' second parameter should be type IServiceLogger.");
+                    throw new ApplicationException($"The target method '{_callMe.Name}' second parameter should be type {nameof(ILogger)}.");
                 }
                 newDefinitions.Add(new ParameterDefinition() { Create = (r, l, e) => l });
 
@@ -103,31 +104,10 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
         //------------------------------------------------------------------------------
         /// <summary>
-        /// Yes, I know this is provided in system.web.http, but the point of this library
-        /// is to avoid that dependency
-        /// </summary>
-        //------------------------------------------------------------------------------
-        public static KeyValuePair<string, string>[] GetQueryNameValuePairs(HttpRequestMessage request)
-        {
-            var queryParts = request.RequestUri.Query.TrimStart('?').Split('&');
-            var output = new List<KeyValuePair<string, string>>();
-            foreach (var part in queryParts)
-            {
-                var trimmed = part.Trim();
-                if (trimmed == "") continue;
-                var subParts = trimmed.Split(new[] { '=' }, 2);
-                output.Add(new KeyValuePair<string, string>(subParts[0], subParts.Length > 1 ? Uri.UnescapeDataString(subParts[1]).Trim() : null));
-            }
-
-            return output.ToArray();
-        }
-
-        //------------------------------------------------------------------------------
-        /// <summary>
         /// Generic way to handle parameters
         /// </summary>
         //------------------------------------------------------------------------------
-        public static T ReadParameters<T>(HttpRequestMessage request) where T : new()
+        public static T ReadParameters<T>(IRocketScienceRequest request) where T : new()
         {
             var queryProperties = new List<PropertyInfo>();
             var headerProperties = new List<PropertyInfo>();
@@ -136,7 +116,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             var uriPairs = new List<KeyValuePair<string, string>>();
             var errors = new List<string>();
 
-            uriPairs.AddRange(GetQueryNameValuePairs(request));
+            uriPairs.AddRange(request.QueryParts);
 
             T output = ReadParameters<T>(request, uriPairs, queryProperties, headerProperties, requiredProperties, bodyProperties, errors);
 
@@ -159,7 +139,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// </summary>
             //------------------------------------------------------------------------------
         private static T ReadParameters<T>(
-            HttpRequestMessage request,
+            IRocketScienceRequest request,
             List<KeyValuePair<string,string>> uriParameters,
             List<PropertyInfo> queryProperties,
             List<PropertyInfo> headerProperties,
@@ -293,13 +273,11 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
             foreach (var headerItem in headers)
             {
-                var headerValues = headerItem.Value.ToArray();
-
                 foreach (var property in headerProperties.ToArray())
                 {
                     var parameterInfo = property.GetRocketScienceAttribute();
 
-                    if (DigestProperty(property, headerItem.Key, headerValues[0], parameterInfo?.RemoveRequiredPrefix))
+                    if (DigestProperty(property, headerItem.Key, headerItem.Value, parameterInfo?.RemoveRequiredPrefix))
                     {
                         headerProperties.Remove(property);
                         break;
@@ -319,7 +297,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
                 }
                 else
                 {
-                    var bodyText = request.Content.ReadAsStringAsync().Result;
+                    var bodyText = request.Content;
                     try
                     {
                         var bodyValue = JsonConvert.DeserializeObject(bodyText, bodyProperties[0].PropertyType);

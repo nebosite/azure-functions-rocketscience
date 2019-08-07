@@ -13,6 +13,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)FunctionParameter\FunctionParameterAttributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FunctionParameter\FunctionParameterExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FunctionParameter\StandardRestQueryParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpRequestTranslation\RSHttpRequestMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpRequestTranslation\RSHttpRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HttpRequestTranslation\IRocketScienceRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Service\LaunchPad.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Service\ServiceOperationError.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Service\ServiceOperationException.cs" />

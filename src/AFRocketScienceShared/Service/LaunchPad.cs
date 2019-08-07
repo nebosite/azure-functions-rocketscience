@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Swagger.ObjectModel;
 using System;
@@ -55,13 +56,21 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         //--------------------------------------------------------------------------------
         public static HttpResponseMessage ShowSwaggerHtmlResponse(HttpRequestMessage req, ILogger logger)
         {
+            return ShowSwaggerHtmlResponse(new RSHttpRequestMessage(req), logger);
+        }
+        public static HttpResponseMessage ShowSwaggerHtmlResponse(HttpRequest req, ILogger logger)
+        {
+            return ShowSwaggerHtmlResponse(new RSHttpRequest(req), logger);
+        }
+        public static HttpResponseMessage ShowSwaggerHtmlResponse(IRocketScienceRequest req, ILogger logger)
+        {
             try
             {
                 if (_docs == null)
                 {
                     try
                     {
-                        _docs = GenerateSwagger(req, logger, Assembly.GetCallingAssembly());
+                        _docs = GenerateSwagger(req, logger, GetCallingAzureFunction().DeclaringType.Assembly);
                     }
                     catch (Exception e)
                     {
@@ -176,7 +185,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Auto-generate swagger doc tree from the calling assembly
         /// </summary>
         //--------------------------------------------------------------------------------
-        private static SwaggerRoot GenerateSwagger(HttpRequestMessage req, ILogger logger, Assembly functionAssembly)
+        private static SwaggerRoot GenerateSwagger(IRocketScienceRequest req, ILogger logger, Assembly functionAssembly)
         {
             var caller = GetCallingAzureFunction();
             var paths = new Dictionary<string, PathItem>();
@@ -225,9 +234,9 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
             var root = new SwaggerRoot()
             {
-                Info = new Info() { Title = req.RequestUri.Host, Version = functionAssembly.GetName().Version.ToString() },
-                Host = req.RequestUri.Host,
-                BasePath = req.RequestUri.LocalPath.Substring(0, req.RequestUri.LocalPath.Length - callerPath.Length),
+                Info = new Info() { Title = req.Host, Version = functionAssembly.GetName().Version.ToString() },
+                Host = req.Host,
+                BasePath = req.LocalPath.Substring(0, req.LocalPath.Length - callerPath.Length),
                 Schemes = new[] { Schemes.Https },
                 Paths = paths,
                 Definitions = new Dictionary<string, Schema>(),
@@ -325,7 +334,15 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         //--------------------------------------------------------------------------------
         public static async Task<HttpResponseMessage> ExecuteHttpTrigger(HttpRequestMessage req, ILogger logger, params object[] extras)
         {
-            var requestKey = $"{req.Method}>{req.RequestUri.ToString()}";
+            return await ExecuteHttpTrigger(new RSHttpRequestMessage(req), logger, extras);
+        }
+        public static async Task<HttpResponseMessage> ExecuteHttpTrigger(HttpRequest req, ILogger logger, params object[] extras)
+        {
+            return await ExecuteHttpTrigger(new RSHttpRequest(req), logger, extras);
+        }
+        public static async Task<HttpResponseMessage> ExecuteHttpTrigger(IRocketScienceRequest req, ILogger logger, params object[] extras)
+        {
+            var requestKey = req.Key;
             return Instance.SafelyTry(logger, () =>
             {
                 if(!_vehicles.TryGetValue(requestKey, out var caller))
