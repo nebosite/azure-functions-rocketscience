@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Swagger.ObjectModel;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
 
         class ParameterDefinition
         {
-            public Func<HttpRequestMessage, IServiceLogger, object[], object> Create { get; set; }
+            public Func<HttpRequestMessage, ILogger, object[], object> Create { get; set; }
         }
 
         //------------------------------------------------------------------------------
@@ -48,7 +49,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Execute this call as an Http request
         /// </summary>
         //------------------------------------------------------------------------------
-        public object ExecuteHttpRequest(HttpRequestMessage req, IServiceLogger logger, params object[] extras)
+        public object ExecuteHttpRequest(HttpRequestMessage req, ILogger logger, params object[] extras)
         {
             var handler = _handlerStaticProperty.GetValue(null);
             var generatedParameters = new List<object>();

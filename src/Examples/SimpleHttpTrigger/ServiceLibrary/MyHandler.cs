@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Functions.AFRocketScience;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Swagger.ObjectModel;
 using System;
@@ -88,7 +89,7 @@ namespace ServiceLibrary
         /// The handler for the Azure function "GetStuff"
         /// </summary>
         //------------------------------------------------------------------------------
-        public Stuff GetStuff(GetStuffArguments args, IServiceLogger log)
+        public Stuff GetStuff(GetStuffArguments args, ILogger log)
         {
             // The signature of the handler method is important.  First argument should be
             // your own special argument class that RocketScience will fill out for you.
@@ -159,7 +160,7 @@ namespace ServiceLibrary
         /// The handler for the Azure function "GetStuff"
         /// </summary>
         //------------------------------------------------------------------------------
-        public bool PostStuff(PostStuffArguments args, IServiceLogger log)
+        public bool PostStuff(PostStuffArguments args, ILogger log)
         {
             // Again, make sure to check the bearer token first
             Authorize(args);

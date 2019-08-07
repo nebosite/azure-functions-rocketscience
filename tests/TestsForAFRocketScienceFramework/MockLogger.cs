@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Functions.AFRocketScience;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -9,19 +10,28 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Functions.AFRocketScienceTests
 {
     [ExcludeFromCodeCoverage]
-    class MockLogger : IServiceLogger
+    class MockLogger : ILogger
     {
         public List<string> Errors = new List<string>();
-        public List<string> Infos = new List<string>();
 
-        public void Error(string message, Exception exception)
+        public IDisposable BeginScope<TState>(TState state)
         {
-            Errors.Add(message + " * " + exception.Message);
+            throw new NotImplementedException();
         }
 
-        public void Info(string message)
+        public bool IsEnabled(LogLevel logLevel)
         {
-            Infos.Add(message);
+            throw new NotImplementedException();
+        }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LogError(string message, params object[] items)
+        {
+            Errors.Add(message + " * " + ((Exception)items[0]).Message);
         }
     }
 }

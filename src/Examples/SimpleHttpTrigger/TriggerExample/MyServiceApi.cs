@@ -7,6 +7,7 @@ using Microsoft.Azure.Functions.AFRocketScience;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Logging;
 using ServiceLibrary;
 
 namespace TriggerExample
@@ -28,11 +29,11 @@ namespace TriggerExample
         public static async Task<HttpResponseMessage> GetStuff(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "v1/stuff")]
             HttpRequestMessage req, 
-            TraceWriter log)
+            ILogger log)
         {
             // Launchpad will automatically call Handler.GetStuff - it always looks
             // for a method on the handler with the same name as this one.
-            return await LaunchPad.ExecuteHttpTrigger(req, new TraceLogger(log));
+            return await LaunchPad.ExecuteHttpTrigger(req, log);
         }
 
         //--------------------------------------------------------------------------------
@@ -44,11 +45,11 @@ namespace TriggerExample
         public static async Task<HttpResponseMessage> PostStuff(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "v1/stuff")]
             HttpRequestMessage req,
-            TraceWriter log)
+            ILogger log)
         {
             // Launchpad will automatically call Handler.GetStuff - it always looks
             // for a method on the handler with the same name as this one.
-            return await LaunchPad.ExecuteHttpTrigger(req, new TraceLogger(log));
+            return await LaunchPad.ExecuteHttpTrigger(req, log);
         }
 
         //--------------------------------------------------------------------------------
@@ -61,9 +62,9 @@ namespace TriggerExample
         public static async Task<HttpResponseMessage> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "v1/docs")]
             HttpRequestMessage req,
-            TraceWriter log)
+            ILogger log)
         {
-            return LaunchPad.ShowSwaggerHtmlResponse(req, new TraceLogger(log));
+            return LaunchPad.ShowSwaggerHtmlResponse(req, log);
         }
 
     }

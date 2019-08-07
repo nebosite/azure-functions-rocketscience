@@ -13,7 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)FunctionParameter\FunctionParameterAttributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FunctionParameter\FunctionParameterExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FunctionParameter\StandardRestQueryParameters.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Service\IServiceLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Service\LaunchPad.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Service\ServiceOperationError.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Service\ServiceOperationException.cs" />

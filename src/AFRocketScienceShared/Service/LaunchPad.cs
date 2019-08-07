@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Swagger.ObjectModel;
 using System;
 using System.Collections.Generic;
@@ -52,7 +53,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Get the swagger documentation for this assembly
         /// </summary>
         //--------------------------------------------------------------------------------
-        public static HttpResponseMessage ShowSwaggerHtmlResponse(HttpRequestMessage req, IServiceLogger logger)
+        public static HttpResponseMessage ShowSwaggerHtmlResponse(HttpRequestMessage req, ILogger logger)
         {
             try
             {
@@ -175,7 +176,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Auto-generate swagger doc tree from the calling assembly
         /// </summary>
         //--------------------------------------------------------------------------------
-        private static SwaggerRoot GenerateSwagger(HttpRequestMessage req, IServiceLogger logger, Assembly functionAssembly)
+        private static SwaggerRoot GenerateSwagger(HttpRequestMessage req, ILogger logger, Assembly functionAssembly)
         {
             var caller = GetCallingAzureFunction();
             var paths = new Dictionary<string, PathItem>();
@@ -322,7 +323,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// function. 
         /// </summary>
         //--------------------------------------------------------------------------------
-        public static async Task<HttpResponseMessage> ExecuteHttpTrigger(HttpRequestMessage req, IServiceLogger logger, params object[] extras)
+        public static async Task<HttpResponseMessage> ExecuteHttpTrigger(HttpRequestMessage req, ILogger logger, params object[] extras)
         {
             var requestKey = $"{req.Method}>{req.RequestUri.ToString()}";
             return Instance.SafelyTry(logger, () =>
@@ -371,7 +372,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Framework for handling background jobs. 
         /// </summary>
         //--------------------------------------------------------------------------------
-        internal void SafelyTryJob(IServiceLogger logger, Action tryme)
+        internal void SafelyTryJob(ILogger logger, Action tryme)
         {
             try
             {
@@ -380,7 +381,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
             catch (Exception e)
             {
                 var logKey = CurrentLogKey;
-                logger.Error($"{logKey} Fatal Error: {e.ToString()}", e);
+                logger.LogError($"{logKey} Fatal Error: {e.ToString()}", e);
             }
         }
 
@@ -390,7 +391,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// is regular. 
         /// </summary>
         //--------------------------------------------------------------------------------
-        internal HttpResponseMessage SafelyTry(IServiceLogger logger, Func<object> tryme)
+        internal HttpResponseMessage SafelyTry(ILogger logger, Func<object> tryme)
         {
             try
             {
@@ -425,11 +426,11 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         /// Error response 
         /// </summary>
         //--------------------------------------------------------------------------------
-        public static HttpResponseMessage Error(Exception error, IServiceLogger logger)
+        public static HttpResponseMessage Error(Exception error, ILogger logger)
         {
             if (error is TargetInvocationException) error = ((TargetInvocationException)error).InnerException;
             var logKey = CurrentLogKey;
-            logger.Error($"{logKey} Service Error: {error.Message}", error);
+            logger.LogError($"{logKey} Service Error: {error.Message}", error);
            
 
             var statusCode = HttpStatusCode.BadRequest;
