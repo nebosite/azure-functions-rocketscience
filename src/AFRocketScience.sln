@@ -13,6 +13,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AFRocketScienceShared", "AF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{FE17E9EB-1D54-45F9-9273-FE083660FD16}"
 	ProjectSection(SolutionItems) = preProject
+		DotNetStandardLibrary\Readme-publishing.txt = DotNetStandardLibrary\Readme-publishing.txt
 		TODO.txt = TODO.txt
 	EndProjectSection
 EndProject
