@@ -4,16 +4,16 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>icrosoft.Azure.Functions.AFRocketScience</RootNamespace>
     <PackageId>RocketScience.Azure.Functions</PackageId>
-    <Version>0.2.0.0</Version>
+    <Version>0.2.0.1</Version>
     <Authors>Eric Jorgensen</Authors>
     <Company>Microsoft</Company>
     <Product>RocketScience For Azure Functions</Product>
     <Description>Tools to help quickly write Azure Functions</Description>
     <PackageProjectUrl>https://github.com/nebosite/azure-functions-rocketscience</PackageProjectUrl>
-    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <AssemblyVersion>0.2.0.1</AssemblyVersion>
     <PackageTags>Azure Azure-Functions Functions Cloud</PackageTags>
     <PackageReleaseNotes>Troubleshooting nuget problems</PackageReleaseNotes>
-    <FileVersion>0.2.0.0</FileVersion>
+    <FileVersion>0.2.0.1</FileVersion>
     <DebugType>Full</DebugType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>

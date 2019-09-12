@@ -447,7 +447,7 @@ namespace Microsoft.Azure.Functions.AFRocketScience
         {
             if (error is TargetInvocationException) error = ((TargetInvocationException)error).InnerException;
             var logKey = CurrentLogKey;
-            logger.LogError($"{logKey} Service Error: {error.Message}", error);
+            logger.LogError($"{logKey} Service Error: {error}", error);
            
 
             var statusCode = HttpStatusCode.BadRequest;

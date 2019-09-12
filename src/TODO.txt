@@ -1,7 +1,10 @@
 
 TODO
-
-    [ ] RocketScience: process Rocketscience attributes for container classes
+	[ ] Document how to search trace logs for the key
+		- Open app service settings.  In Monitoring section, choose "Logs (Analytics)"
+		- search looks like this: traces | where message contains "20190809_202851_411641"
+	[ ] Set up license correctly: https://aka.ms/deprecateLicenseUrl
+    [x] RocketScience: process Rocketscience attributes for container classes
         - We want to auto-verify arguments that come in from the body
 
 	[ ] Document how to build against AFRS
